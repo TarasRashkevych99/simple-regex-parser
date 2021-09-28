@@ -1,4 +1,4 @@
-# ThompsonsConstruction
+# Thompson's Construction
 
 The purpose of this project is to implement the so-called Thompson's construction algorithm, which is 
 used to create, from an arbitrary regular expression, an NFA, i.e., a Nondeterministic Finite Automaton.
