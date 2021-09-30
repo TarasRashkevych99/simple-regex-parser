@@ -1,0 +1,130 @@
+class RegexParser:
+    _REGEX_LEFT_PAR = "("
+    _REGEX_RIGHT_PAR = ")"
+    _REGEX_KLEENE_STAR_OP = "*"
+    _REGEX_CONCAT_OP = "."
+    _REGEX_ALTERNATION_OP = "|"
+    _regex_in_infix_notation_raw = ""
+    _regex_in_infix_notation_preprocessed = ""
+    _regex_in_postfix_notation_parsed = ""
+
+    def __init__(self, regex: str) -> None:
+        self._regex_in_infix_notation_raw = regex
+        self._regex_in_infix_notation_preprocessed = self._preprocess_regex(regex)
+
+    @property
+    def regex_in_infix_notation_raw(self):
+        return self._regex_in_infix_notation_raw
+
+    @property
+    def regex_in_infix_notation_preprocessed(self):
+        return self._regex_in_infix_notation_preprocessed
+
+    @property
+    def regex_in_postfix_notation_parsed(self):
+        if self._regex_in_postfix_notation_parsed:
+            return self._regex_in_postfix_notation_parsed
+        else:
+            raise ValueError(
+                "The regex has not been parsed. Please call the convert_from_infix_to_postfix() method."
+            )
+
+    def convert_from_infix_to_postfix(self) -> None:
+        stack = []
+
+        for i in range(len(self._regex_in_infix_notation_preprocessed)):
+            next_char = self._regex_in_infix_notation_preprocessed[i]
+
+            if self._is_operand(next_char):
+                self._regex_in_postfix_notation_parsed += next_char
+            elif next_char == self._REGEX_LEFT_PAR:
+                stack.append(self._REGEX_LEFT_PAR)
+            elif next_char == self._REGEX_RIGHT_PAR:
+                while stack[-1] != self._REGEX_LEFT_PAR:
+                    self._regex_in_postfix_notation_parsed += stack.pop()
+                stack.pop()
+            else:
+                while len(stack) != 0 and self._get_precedence(
+                    next_char
+                ) <= self._get_precedence(stack[-1]):
+                    self._regex_in_postfix_notation_parsed += stack.pop()
+                stack.append(next_char)
+
+        while len(stack) != 0:
+            self._regex_in_postfix_notation_parsed += stack.pop()
+
+    def _preprocess_regex(self, regex: str) -> str:
+        if not regex:
+            return regex
+
+        processed_regex = ""
+        pred_char = ""
+        current_char = ""
+        for i in range(len(regex)):
+            pred_char = current_char
+            current_char = regex[i]
+
+            if (
+                (self._is_operand(pred_char) and self._is_operand(current_char))
+                or (
+                    self._is_kleene_star_operator(pred_char)
+                    and self._is_operand(current_char)
+                )
+                or (
+                    self._is_left_parentesis(pred_char)
+                    and self._is_right_parentesis(current_char)
+                )
+                or (
+                    self._is_right_parentesis(pred_char)
+                    and self._is_operand(current_char)
+                )
+                or (
+                    self._is_operand(pred_char)
+                    and self._is_left_parentesis(current_char)
+                )
+            ):
+                processed_regex += self._REGEX_CONCAT_OP + current_char
+            else:
+                processed_regex += current_char
+
+        return processed_regex
+
+    def _get_precedence(self, character: str) -> int:
+        if character == self._REGEX_KLEENE_STAR_OP:
+            return 3
+        elif character == self._REGEX_CONCAT_OP:
+            return 2
+        elif character == self._REGEX_ALTERNATION_OP:
+            return 1
+        else:
+            return -1
+
+    def _is_operand(self, character: str) -> bool:
+        return (
+            character != ""
+            and character != self._REGEX_KLEENE_STAR_OP
+            and character != self._REGEX_CONCAT_OP
+            and character != self._REGEX_ALTERNATION_OP
+            and character != self._REGEX_LEFT_PAR
+            and character != self._REGEX_RIGHT_PAR
+        )
+
+    def _is_kleene_star_operator(self, character: str) -> bool:
+        return character == self._REGEX_KLEENE_STAR_OP
+
+    def _is_left_parentesis(self, character: str) -> bool:
+        return character == self._REGEX_LEFT_PAR
+
+    def _is_right_parentesis(self, character: str) -> bool:
+        return character == self._REGEX_RIGHT_PAR
+
+
+if __name__ == "__main__":
+    regex = "ab|c*d|asdf|(a(adf)*)"
+    parser = RegexParser(regex)
+    print("Raw Infix Notation Regex:\t", parser.regex_in_infix_notation_raw)
+    print(
+        "Processed Infix Notation Regex:\t", parser.regex_in_infix_notation_preprocessed
+    )
+    parser.convert_from_infix_to_postfix()
+    print("Postfix Notation Regex:\t\t", parser.regex_in_postfix_notation_parsed)
