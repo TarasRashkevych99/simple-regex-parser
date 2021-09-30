@@ -27,7 +27,7 @@ class RegexParser:
                 "The regex has not been parsed. Please call the convert_from_infix_to_postfix() method."
             )
 
-    def convert_from_infix_to_postfix(self) -> None:
+    def convert_from_infix_to_postfix_notation(self) -> None:
         stack = []
 
         for i in range(len(self._regex_in_infix_notation_preprocessed)):
@@ -120,9 +120,11 @@ class RegexParser:
 if __name__ == "__main__":
     regex = "ab|c*d|asdf|(a(adf)*)"
     parser = RegexParser(regex)
-    print(f"Raw Infix Notation Regex:\t {parser.regex_in_infix_notation_raw}")
+    print(f"Raw regex in infix notation:\t\t {parser.regex_in_infix_notation_raw}")
     print(
-        f"Processed Infix Notation Regex:\t {parser.regex_in_infix_notation_preprocessed}"
+        f"Preprocessed regex in infix notation:\t {parser.regex_in_infix_notation_preprocessed}"
     )
-    parser.convert_from_infix_to_postfix()
-    print(f"Postfix Notation Regex:\t\t {parser.regex_in_postfix_notation_parsed}")
+    parser.convert_from_infix_to_postfix_notation()
+    print(
+        f"Parsed regex in postfix notation:\t {parser.regex_in_postfix_notation_parsed}"
+    )
