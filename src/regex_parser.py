@@ -4,13 +4,11 @@ class RegexParser:
     _REGEX_KLEENE_STAR_OP = "*"
     _REGEX_CONCAT_OP = "."
     _REGEX_ALTERNATION_OP = "|"
-    _regex_in_infix_notation_raw = ""
-    _regex_in_infix_notation_preprocessed = ""
-    _regex_in_postfix_notation_parsed = ""
 
     def __init__(self, regex: str) -> None:
         self._regex_in_infix_notation_raw = regex
         self._regex_in_infix_notation_preprocessed = self._preprocess_regex(regex)
+        self._regex_in_postfix_notation_parsed = ""
 
     @property
     def regex_in_infix_notation_raw(self):
@@ -37,10 +35,10 @@ class RegexParser:
 
             if self._is_operand(next_char):
                 self._regex_in_postfix_notation_parsed += next_char
-            elif next_char == self._REGEX_LEFT_PAR:
-                stack.append(self._REGEX_LEFT_PAR)
-            elif next_char == self._REGEX_RIGHT_PAR:
-                while stack[-1] != self._REGEX_LEFT_PAR:
+            elif next_char == RegexParser._REGEX_LEFT_PAR:
+                stack.append(RegexParser._REGEX_LEFT_PAR)
+            elif next_char == RegexParser._REGEX_RIGHT_PAR:
+                while stack[-1] != RegexParser._REGEX_LEFT_PAR:
                     self._regex_in_postfix_notation_parsed += stack.pop()
                 stack.pop()
             else:
@@ -57,7 +55,7 @@ class RegexParser:
         if not regex:
             return regex
 
-        processed_regex = ""
+        preprocessed_regex = ""
         pred_char = ""
         current_char = ""
         for i in range(len(regex)):
@@ -83,18 +81,18 @@ class RegexParser:
                     and self._is_left_parentesis(current_char)
                 )
             ):
-                processed_regex += self._REGEX_CONCAT_OP + current_char
+                preprocessed_regex += RegexParser._REGEX_CONCAT_OP + current_char
             else:
-                processed_regex += current_char
+                preprocessed_regex += current_char
 
-        return processed_regex
+        return preprocessed_regex
 
     def _get_precedence(self, character: str) -> int:
-        if character == self._REGEX_KLEENE_STAR_OP:
+        if character == RegexParser._REGEX_KLEENE_STAR_OP:
             return 3
-        elif character == self._REGEX_CONCAT_OP:
+        elif character == RegexParser._REGEX_CONCAT_OP:
             return 2
-        elif character == self._REGEX_ALTERNATION_OP:
+        elif character == RegexParser._REGEX_ALTERNATION_OP:
             return 1
         else:
             return -1
@@ -102,29 +100,29 @@ class RegexParser:
     def _is_operand(self, character: str) -> bool:
         return (
             character != ""
-            and character != self._REGEX_KLEENE_STAR_OP
-            and character != self._REGEX_CONCAT_OP
-            and character != self._REGEX_ALTERNATION_OP
-            and character != self._REGEX_LEFT_PAR
-            and character != self._REGEX_RIGHT_PAR
+            and character != RegexParser._REGEX_KLEENE_STAR_OP
+            and character != RegexParser._REGEX_CONCAT_OP
+            and character != RegexParser._REGEX_ALTERNATION_OP
+            and character != RegexParser._REGEX_LEFT_PAR
+            and character != RegexParser._REGEX_RIGHT_PAR
         )
 
     def _is_kleene_star_operator(self, character: str) -> bool:
-        return character == self._REGEX_KLEENE_STAR_OP
+        return character == RegexParser._REGEX_KLEENE_STAR_OP
 
     def _is_left_parentesis(self, character: str) -> bool:
-        return character == self._REGEX_LEFT_PAR
+        return character == RegexParser._REGEX_LEFT_PAR
 
     def _is_right_parentesis(self, character: str) -> bool:
-        return character == self._REGEX_RIGHT_PAR
+        return character == RegexParser._REGEX_RIGHT_PAR
 
 
 if __name__ == "__main__":
     regex = "ab|c*d|asdf|(a(adf)*)"
     parser = RegexParser(regex)
-    print("Raw Infix Notation Regex:\t", parser.regex_in_infix_notation_raw)
+    print(f"Raw Infix Notation Regex:\t {parser.regex_in_infix_notation_raw}")
     print(
-        "Processed Infix Notation Regex:\t", parser.regex_in_infix_notation_preprocessed
+        f"Processed Infix Notation Regex:\t {parser.regex_in_infix_notation_preprocessed}"
     )
     parser.convert_from_infix_to_postfix()
-    print("Postfix Notation Regex:\t\t", parser.regex_in_postfix_notation_parsed)
+    print(f"Postfix Notation Regex:\t\t {parser.regex_in_postfix_notation_parsed}")
