@@ -9,7 +9,6 @@ class RegexParser:
     _REGEX_KLEENE_STAR_OP = "*"
     _REGEX_CONCAT_OP = "."
     _REGEX_ALTERNATION_OP = "|"
-    _REGEX_EMPTY_STR = "ε"
 
     def __init__(self, regex: str) -> None:
         self._raw_regex = regex
@@ -37,8 +36,15 @@ class RegexParser:
             left_nfa = self._build_nfa(root.left_child)
             right_nfa = self._build_nfa(root.right_child)
             # print(root.character, end="")
+            empty_nfa = NFA()
             if self._is_operand(root.character):
-                return NFA()
+                return empty_nfa.join_on_operand(root.character)
+            elif self._is_kleene_star_operator(root.character):
+                return empty_nfa.join_on_kleene_star_operator(left_nfa)
+            elif self._is_alternation_operator(root.character):
+                return empty_nfa.join_on_alternation_operator(left_nfa, right_nfa)
+            elif self._is_concat_operator(root.character):
+                return empty_nfa.join_on_concat_operator(left_nfa, right_nfa)
 
     def _convert_regex(self, preprocessed_regex: str) -> str:
         stack: List[str] = []
