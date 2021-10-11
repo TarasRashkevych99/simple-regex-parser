@@ -1,5 +1,6 @@
-from typing import NoReturn
-from expression_tree import ExpressionTree
+from typing import List
+from expression_tree import ExprTree
+from nfa import NFA
 
 
 class RegexParser:
@@ -8,82 +9,89 @@ class RegexParser:
     _REGEX_KLEENE_STAR_OP = "*"
     _REGEX_CONCAT_OP = "."
     _REGEX_ALTERNATION_OP = "|"
+    _REGEX_EMPTY_STR = "ε"
 
     def __init__(self, regex: str) -> None:
-        self._regex_in_infix_notation_raw = regex
-        self._regex_in_infix_notation_preprocessed = self._preprocess_regex(regex)
-        self._regex_in_postfix_notation = ""
-        self._expression_tree = None
+        self._raw_regex = regex
+        self._preprocessed_regex = self._preprocess_regex(self._raw_regex)
+        self._converted_regex = self._convert_regex(self._preprocessed_regex)
+        self._expression_tree = self._create_expression_tree(self._converted_regex)
 
     @property
-    def regex_in_infix_notation_raw(self) -> str:
-        return self._regex_in_infix_notation_raw
+    def raw_regex(self) -> str:
+        return self._raw_regex
 
     @property
-    def regex_in_infix_notation_preprocessed(self) -> str:
-        return self._regex_in_infix_notation_preprocessed
+    def preprocessed_regex(self) -> str:
+        return self._preprocessed_regex
 
     @property
-    def regex_in_postfix_notation(self) -> str:
-        if self._regex_in_postfix_notation:
-            return self._regex_in_postfix_notation
-        else:
-            raise ValueError(
-                "The regex has not been parsed. Please call the convert_from_infix_to_postfix() method."
-            )
+    def converted_regex(self) -> str:
+        return self._converted_regex
 
-    def convert_from_infix_to_postfix_notation(self) -> None:
-        stack = []
+    def build_nfa(self) -> NFA:
+        return self._build_nfa(self._expression_tree)
 
-        for i in range(len(self._regex_in_infix_notation_preprocessed)):
-            next_char = self._regex_in_infix_notation_preprocessed[i]
+    def _build_nfa(self, root: ExprTree) -> NFA:
+        if root is not None:
+            left_nfa = self._build_nfa(root.left_child)
+            right_nfa = self._build_nfa(root.right_child)
+            # print(root.character, end="")
+            if self._is_operand(root.character):
+                return NFA()
+
+    def _convert_regex(self, preprocessed_regex: str) -> str:
+        stack: List[str] = []
+        converted_regex = ""
+
+        for i in range(len(preprocessed_regex)):
+            next_char = preprocessed_regex[i]
 
             if self._is_operand(next_char):
-                self._regex_in_postfix_notation += next_char
+                converted_regex += next_char
             elif next_char == RegexParser._REGEX_LEFT_PAR:
                 stack.append(RegexParser._REGEX_LEFT_PAR)
             elif next_char == RegexParser._REGEX_RIGHT_PAR:
                 while stack[-1] != RegexParser._REGEX_LEFT_PAR:
-                    self._regex_in_postfix_notation += stack.pop()
+                    converted_regex += stack.pop()
                 stack.pop()
             else:
                 while len(stack) != 0 and self._get_precedence(
                     next_char
                 ) <= self._get_precedence(stack[-1]):
-                    self._regex_in_postfix_notation += stack.pop()
+                    converted_regex += stack.pop()
                 stack.append(next_char)
 
         while len(stack) != 0:
-            self._regex_in_postfix_notation += stack.pop()
+            converted_regex += stack.pop()
 
-    def create_expression_tree(self) -> None:
-        stack = []
+        return converted_regex
 
-        for character in self.regex_in_postfix_notation:
+    def _create_expression_tree(self, converted_regex: str) -> ExprTree:
+        stack: List[ExprTree] = []
+
+        for character in converted_regex:
             if self._is_kleene_star_operator(character):
                 left_child = stack.pop()
-                stack.append(ExpressionTree(character, left_child))
+                stack.append(ExprTree(character, left_child))
             elif self._is_concat_operator(character) or self._is_alternation_operator(
                 character
             ):
                 right_child = stack.pop()
                 left_child = stack.pop()
-                stack.append(ExpressionTree(character, left_child, right_child))
+                stack.append(ExprTree(character, left_child, right_child))
             else:
-                stack.append(ExpressionTree(character))
+                stack.append(ExprTree(character))
 
-        self._expression_tree = stack[-1]
+        return stack[-1]
 
-    def _preprocess_regex(self, regex: str) -> str:
-        if not regex:
-            return regex
-
+    def _preprocess_regex(self, raw_regex: str) -> str:
         preprocessed_regex = ""
         pred_char = ""
         current_char = ""
-        for i in range(len(regex)):
+        for i in range(len(raw_regex)):
             pred_char = current_char
-            current_char = regex[i]
+            current_char = raw_regex[i]
 
             if (
                 (self._is_operand(pred_char) and self._is_operand(current_char))
@@ -151,11 +159,9 @@ class RegexParser:
 
 
 if __name__ == "__main__":
-    regex = "ab|c*d|asdf|(a(adf)*)"
+    # regex = "ab|c*d|asdf|(a(adf)*)"
+    regex = "a*bc"
     parser = RegexParser(regex)
-    print(f"Raw regex in infix notation:\t\t {parser.regex_in_infix_notation_raw}")
-    print(
-        f"Preprocessed regex in infix notation:\t {parser.regex_in_infix_notation_preprocessed}"
-    )
-    parser.convert_from_infix_to_postfix_notation()
-    print(f"Parsed regex in postfix notation:\t {parser.regex_in_postfix_notation}")
+    print(f"Raw regex in infix notation:\t\t {parser.raw_regex}")
+    print(f"Preprocessed regex in infix notation:\t {parser.preprocessed_regex}")
+    print(f"Converted regex in postfix notation:\t {parser.converted_regex}")
