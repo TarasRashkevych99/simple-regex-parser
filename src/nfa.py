@@ -102,7 +102,7 @@ class NFA:
 
         self._states.remove(right_nfa_old_initial_state)
 
-        for (state, character) in self._trans_func:
+        for (state, character) in list(self._trans_func):
             if state == right_nfa_old_initial_state:
                 states = self._trans_func.pop((state, character))
                 self._trans_func.update({(left_nfa_old_final_state, character): states})

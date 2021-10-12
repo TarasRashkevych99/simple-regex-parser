@@ -167,7 +167,7 @@ class RegexParser:
 
 if __name__ == "__main__":
     # regex = "ab|c*d|asdf|(a(adf)*)"
-    regex = "a*bc|a"
+    regex = "(a|b|c|d)*"
     parser = RegexParser(regex)
     print(f"Raw regex in infix notation:\t\t {parser.raw_regex}")
     print(f"Preprocessed regex in infix notation:\t {parser.preprocessed_regex}")
