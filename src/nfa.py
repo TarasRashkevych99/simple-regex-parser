@@ -21,9 +21,9 @@ class NFA:
         nfa_repr += f"\tFinal State: (({self._final_state}))\n"
         nfa_repr += f"\tStates({len(self._states)}): {self._states}\n"
         nfa_repr += f"\tAlphabet({len(self._alphabet)}): {self._alphabet}\n"
-        nfa_repr += "\tTransition Function: "
+        nfa_repr += f"\tTransition Function({sum((len(self._trans_func[key]) for key in self._trans_func))}): "
         for key in self._trans_func:
-            nfa_repr += f"\n{str(key).rjust(36)} --> {self._trans_func[key]}"
+            nfa_repr += f"\n{str(key).rjust(40)} --> {self._trans_func[key]}"
 
         return nfa_repr
 
