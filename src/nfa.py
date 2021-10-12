@@ -16,16 +16,16 @@ class NFA:
         self._trans_func: TransFunc = {}
 
     def __str__(self) -> str:
-        nfa_representation = "Generated NFA:\n"
-        nfa_representation += f"\tInitial State: ({self._initial_state})\n"
-        nfa_representation += f"\tFinal State: (({self._final_state}))\n"
-        nfa_representation += f"\tStates: {self._states}\n"
-        nfa_representation += f"\tAlphabet: {self._alphabet}\n"
-        nfa_representation += "\tTransition Function: "
+        nfa_repr = "Generated NFA:\n"
+        nfa_repr += f"\tInitial State: ({self._initial_state})\n"
+        nfa_repr += f"\tFinal State: (({self._final_state}))\n"
+        nfa_repr += f"\tStates: {self._states}\n"
+        nfa_repr += f"\tAlphabet: {self._alphabet}\n"
+        nfa_repr += "\tTransition Function: "
         for key in self._trans_func:
-            nfa_representation += f"\n{str(key).rjust(36)} --> {self._trans_func[key]}"
+            nfa_repr += f"\n{str(key).rjust(36)} --> {self._trans_func[key]}"
 
-        return nfa_representation
+        return nfa_repr
 
     def join_on_operand(self, character) -> Optional["NFA"]:
         self._initial_state = NFA._next_state_id
