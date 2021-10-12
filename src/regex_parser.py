@@ -15,6 +15,7 @@ class RegexParser:
         self._preprocessed_regex = self._preprocess_regex(self._raw_regex)
         self._converted_regex = self._convert_regex(self._preprocessed_regex)
         self._expression_tree = self._create_expression_tree(self._converted_regex)
+        self._nfa = self._build_nfa(self._expression_tree)
 
     @property
     def raw_regex(self) -> str:
@@ -28,14 +29,14 @@ class RegexParser:
     def converted_regex(self) -> str:
         return self._converted_regex
 
-    def build_nfa(self) -> NFA:
-        return self._build_nfa(self._expression_tree)
+    @property
+    def nfa(self) -> NFA:
+        return self._nfa
 
     def _build_nfa(self, root: ExprTree) -> NFA:
         if root is not None:
             left_nfa = self._build_nfa(root.left_child)
             right_nfa = self._build_nfa(root.right_child)
-            # print(root.character, end="")
             empty_nfa = NFA()
             if self._is_operand(root.character):
                 return empty_nfa.join_on_operand(root.character)
@@ -166,8 +167,9 @@ class RegexParser:
 
 if __name__ == "__main__":
     # regex = "ab|c*d|asdf|(a(adf)*)"
-    regex = "a*bc"
+    regex = "a*bc|a"
     parser = RegexParser(regex)
     print(f"Raw regex in infix notation:\t\t {parser.raw_regex}")
     print(f"Preprocessed regex in infix notation:\t {parser.preprocessed_regex}")
     print(f"Converted regex in postfix notation:\t {parser.converted_regex}")
+    print(parser.nfa)
