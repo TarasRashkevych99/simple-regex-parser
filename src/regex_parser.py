@@ -30,6 +30,10 @@ class RegexParser:
         return self._converted_regex
 
     @property
+    def expression_tree(self) -> ExprTree:
+        return self._expression_tree
+
+    @property
     def nfa(self) -> NFA:
         return self._nfa
 
@@ -39,13 +43,35 @@ class RegexParser:
             right_nfa = self._build_nfa(root.right_child)
             empty_nfa = NFA()
             if self._is_operand(root.character):
-                return empty_nfa.join_on_operand(root.character)
+                empty_nfa.join_on_operand(root.character)
             elif self._is_kleene_star_operator(root.character):
-                return empty_nfa.join_on_kleene_star_operator(left_nfa)
+                empty_nfa.join_on_kleene_star_operator(left_nfa)
             elif self._is_alternation_operator(root.character):
-                return empty_nfa.join_on_alternation_operator(left_nfa, right_nfa)
+                empty_nfa.join_on_alternation_operator(left_nfa, right_nfa)
             elif self._is_concat_operator(root.character):
-                return empty_nfa.join_on_concat_operator(left_nfa, right_nfa)
+                empty_nfa.join_on_concat_operator(left_nfa, right_nfa)
+
+            return empty_nfa
+        else:  # this branch is never reached(it is put here only for formal soundness)
+            return NFA()
+
+    def _create_expression_tree(self, converted_regex: str) -> ExprTree:
+        stack: List[ExprTree] = []
+
+        for character in converted_regex:
+            if self._is_kleene_star_operator(character):
+                left_child = stack.pop()
+                stack.append(ExprTree(character, left_child))
+            elif self._is_concat_operator(character) or self._is_alternation_operator(
+                character
+            ):
+                right_child = stack.pop()
+                left_child = stack.pop()
+                stack.append(ExprTree(character, left_child, right_child))
+            else:
+                stack.append(ExprTree(character))
+
+        return stack[-1]
 
     def _convert_regex(self, preprocessed_regex: str) -> str:
         stack: List[str] = []
@@ -73,24 +99,6 @@ class RegexParser:
             converted_regex += stack.pop()
 
         return converted_regex
-
-    def _create_expression_tree(self, converted_regex: str) -> ExprTree:
-        stack: List[ExprTree] = []
-
-        for character in converted_regex:
-            if self._is_kleene_star_operator(character):
-                left_child = stack.pop()
-                stack.append(ExprTree(character, left_child))
-            elif self._is_concat_operator(character) or self._is_alternation_operator(
-                character
-            ):
-                right_child = stack.pop()
-                left_child = stack.pop()
-                stack.append(ExprTree(character, left_child, right_child))
-            else:
-                stack.append(ExprTree(character))
-
-        return stack[-1]
 
     def _preprocess_regex(self, raw_regex: str) -> str:
         preprocessed_regex = ""
@@ -167,10 +175,10 @@ class RegexParser:
 
 if __name__ == "__main__":
     # regex = "ab|c*d|asdf|(a(adf)*)"
-    regex = "(a|b|c|d)*"
+    regex = "(ab|cd)"
     parser = RegexParser(regex)
     print(f"Raw regex in infix notation:\t\t {parser.raw_regex}")
     print(f"Preprocessed regex in infix notation:\t {parser.preprocessed_regex}")
     print(f"Converted regex in postfix notation:\t {parser.converted_regex}")
-    nfa = parser.nfa
-    print(nfa)
+    print(parser.expression_tree)
+    print(parser.nfa)
