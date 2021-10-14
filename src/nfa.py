@@ -13,8 +13,8 @@ class NFA:
     def __init__(self) -> None:
         self._states: List[int] = []
         self._alphabet: Set[str] = set()
-        self._initial_state: int = None
-        self._final_state: int = None
+        self._initial_state: int = -1
+        self._final_state: int = -1
         self._trans_func: TransFunc = {}
 
     def __str__(self) -> str:
@@ -29,7 +29,7 @@ class NFA:
 
         return nfa_repr
 
-    def join_on_operand(self, character: str) -> NFA:
+    def join_on_operand(self, character: str) -> None:
         self._initial_state = NFA._next_state_id
         self._final_state = NFA._next_state_id + 1
         NFA._next_state_id += 2
@@ -37,9 +37,7 @@ class NFA:
         self._alphabet.add(character)
         self._trans_func = {(self._initial_state, character): [self._final_state]}
 
-        return self
-
-    def join_on_kleene_star_operator(self, left_nfa: NFA) -> NFA:
+    def join_on_kleene_star_operator(self, left_nfa: NFA) -> None:
         self._states = left_nfa._states
         self._alphabet = left_nfa._alphabet
         self._trans_func = left_nfa._trans_func
@@ -59,9 +57,7 @@ class NFA:
         self._initial_state = new_initial_state
         self._final_state = new_final_state
 
-        return self
-
-    def join_on_alternation_operator(self, left_nfa: NFA, right_nfa: NFA) -> NFA:
+    def join_on_alternation_operator(self, left_nfa: NFA, right_nfa: NFA) -> None:
         self._states = left_nfa._states + right_nfa._states
         self._alphabet = left_nfa._alphabet | right_nfa._alphabet
         self._trans_func.update(left_nfa._trans_func)
@@ -84,9 +80,7 @@ class NFA:
         self._initial_state = new_initial_state
         self._final_state = new_final_state
 
-        return self
-
-    def join_on_concat_operator(self, left_nfa: NFA, right_nfa: NFA) -> NFA:
+    def join_on_concat_operator(self, left_nfa: NFA, right_nfa: NFA) -> None:
         self._states = left_nfa._states + right_nfa._states
         self._alphabet = left_nfa._alphabet | right_nfa._alphabet
         self._trans_func.update(left_nfa._trans_func)
@@ -105,8 +99,6 @@ class NFA:
 
         self._initial_state = left_nfa_old_initial_state
         self._final_state = right_nfa_old_finale_state
-
-        return self
 
     def _update_trans_func(self, source: int, destination: int) -> None:
         if (source, NFA._REGEX_EMPTY_STR) in self._trans_func:
