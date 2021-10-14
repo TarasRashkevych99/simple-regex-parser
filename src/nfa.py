@@ -1,4 +1,6 @@
-from typing import Dict, List, Optional, Set, Tuple
+from __future__ import annotations
+from typing import Dict, List, Set, Tuple
+
 
 TransFunc = Dict[Tuple[int, str], List[int]]
 
@@ -27,7 +29,7 @@ class NFA:
 
         return nfa_repr
 
-    def join_on_operand(self, character) -> Optional["NFA"]:
+    def join_on_operand(self, character: str) -> NFA:
         self._initial_state = NFA._next_state_id
         self._final_state = NFA._next_state_id + 1
         NFA._next_state_id += 2
@@ -37,9 +39,7 @@ class NFA:
 
         return self
 
-    def join_on_kleene_star_operator(
-        self, left_nfa: Optional["NFA"]
-    ) -> Optional["NFA"]:
+    def join_on_kleene_star_operator(self, left_nfa: NFA) -> NFA:
         self._states = left_nfa._states
         self._alphabet = left_nfa._alphabet
         self._trans_func = left_nfa._trans_func
@@ -61,9 +61,7 @@ class NFA:
 
         return self
 
-    def join_on_alternation_operator(
-        self, left_nfa: Optional["NFA"], right_nfa: Optional["NFA"]
-    ) -> Optional["NFA"]:
+    def join_on_alternation_operator(self, left_nfa: NFA, right_nfa: NFA) -> NFA:
         self._states = left_nfa._states + right_nfa._states
         self._alphabet = left_nfa._alphabet | right_nfa._alphabet
         self._trans_func.update(left_nfa._trans_func)
@@ -88,9 +86,7 @@ class NFA:
 
         return self
 
-    def join_on_concat_operator(
-        self, left_nfa: Optional["NFA"], right_nfa: Optional["NFA"]
-    ) -> Optional["NFA"]:
+    def join_on_concat_operator(self, left_nfa: NFA, right_nfa: NFA) -> NFA:
         self._states = left_nfa._states + right_nfa._states
         self._alphabet = left_nfa._alphabet | right_nfa._alphabet
         self._trans_func.update(left_nfa._trans_func)
@@ -112,7 +108,7 @@ class NFA:
 
         return self
 
-    def _update_trans_func(self, source, destination) -> None:
+    def _update_trans_func(self, source: int, destination: int) -> None:
         if (source, NFA._REGEX_EMPTY_STR) in self._trans_func:
             source_dest_states = self._trans_func[(source, NFA._REGEX_EMPTY_STR)]
             source_dest_states.append(destination)
