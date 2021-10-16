@@ -54,7 +54,7 @@ class RegexParser:
                 self._join_on_concat_operator(empty_nfa, left_nfa, right_nfa)
 
             return empty_nfa
-        else:  # this branch is never reached(it is put here only for formal soundness)
+        else:  # a new NFA is returned but never used(it is put here only for formal soundness)
             return NFA()
 
     def _create_expression_tree(self, converted_regex: str) -> ExprTree:
