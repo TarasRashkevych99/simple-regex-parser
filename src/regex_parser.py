@@ -9,6 +9,8 @@ class RegexParser:
     _REGEX_KLEENE_STAR_OP = "*"
     _REGEX_CONCAT_OP = "."
     _REGEX_ALTERNATION_OP = "|"
+    _REGEX_EMPTY_STR = "ε"
+    _next_state_id = 0
 
     def __init__(self, regex: str) -> None:
         self._raw_regex = regex
@@ -43,13 +45,13 @@ class RegexParser:
             right_nfa = self._build_nfa(root.right_child)
             empty_nfa = NFA()
             if self._is_operand(root.character):
-                empty_nfa.join_on_operand(root.character)
+                self._join_on_operand(empty_nfa, root.character)
             elif self._is_kleene_star_operator(root.character):
-                empty_nfa.join_on_kleene_star_operator(left_nfa)
+                self._join_on_kleene_star_operator(empty_nfa, left_nfa)
             elif self._is_alternation_operator(root.character):
-                empty_nfa.join_on_alternation_operator(left_nfa, right_nfa)
+                self._join_on_alternation_operator(empty_nfa, left_nfa, right_nfa)
             elif self._is_concat_operator(root.character):
-                empty_nfa.join_on_concat_operator(left_nfa, right_nfa)
+                self._join_on_concat_operator(empty_nfa, left_nfa, right_nfa)
 
             return empty_nfa
         else:  # this branch is never reached(it is put here only for formal soundness)
@@ -136,6 +138,98 @@ class RegexParser:
                 preprocessed_regex += current_char
 
         return preprocessed_regex
+
+    def _join_on_operand(self, empty_nfa: NFA, character: str) -> None:
+        empty_nfa.initial_state = RegexParser._next_state_id
+        empty_nfa.final_state = RegexParser._next_state_id + 1
+        RegexParser._next_state_id += 2
+        empty_nfa.states.extend((empty_nfa.initial_state, empty_nfa.final_state))
+        empty_nfa.alphabet.add(character)
+        empty_nfa.trans_func = {
+            (empty_nfa.initial_state, character): [empty_nfa.final_state]
+        }
+
+    def _join_on_kleene_star_operator(self, empty_nfa: NFA, left_nfa: NFA) -> None:
+        empty_nfa.states = left_nfa.states
+        empty_nfa.alphabet = left_nfa.alphabet
+        empty_nfa.trans_func = left_nfa.trans_func
+        old_initil_state = left_nfa.initial_state
+        old_final_state = left_nfa.final_state
+
+        new_initial_state = RegexParser._next_state_id
+        new_final_state = RegexParser._next_state_id + 1
+        RegexParser._next_state_id += 2
+        empty_nfa.states.extend((new_initial_state, new_final_state))
+
+        self._update_trans_func(empty_nfa, old_final_state, old_initil_state)
+        self._update_trans_func(empty_nfa, old_final_state, new_final_state)
+        self._update_trans_func(empty_nfa, new_initial_state, old_initil_state)
+        self._update_trans_func(empty_nfa, new_initial_state, new_final_state)
+
+        empty_nfa.initial_state = new_initial_state
+        empty_nfa.final_state = new_final_state
+
+    def _join_on_alternation_operator(
+        self, empty_nfa: NFA, left_nfa: NFA, right_nfa: NFA
+    ) -> None:
+        empty_nfa.states = left_nfa.states + right_nfa.states
+        empty_nfa.alphabet = left_nfa.alphabet | right_nfa.alphabet
+        empty_nfa.trans_func.update(left_nfa.trans_func)
+        empty_nfa.trans_func.update(right_nfa.trans_func)
+        left_nfa_old_initial_state = left_nfa.initial_state
+        left_nfa_old_final_state = left_nfa.final_state
+        right_nfa_old_initial_state = right_nfa.initial_state
+        right_nfa_old_finale_state = right_nfa.final_state
+
+        new_initial_state = RegexParser._next_state_id
+        new_final_state = RegexParser._next_state_id + 1
+        RegexParser._next_state_id += 2
+        empty_nfa.states.extend((new_initial_state, new_final_state))
+
+        self._update_trans_func(empty_nfa, right_nfa_old_finale_state, new_final_state)
+        self._update_trans_func(empty_nfa, left_nfa_old_final_state, new_final_state)
+        self._update_trans_func(
+            empty_nfa, new_initial_state, right_nfa_old_initial_state
+        )
+        self._update_trans_func(
+            empty_nfa, new_initial_state, left_nfa_old_initial_state
+        )
+
+        empty_nfa.initial_state = new_initial_state
+        empty_nfa.final_state = new_final_state
+
+    def _join_on_concat_operator(
+        self, empty_nfa: NFA, left_nfa: NFA, right_nfa: NFA
+    ) -> None:
+        empty_nfa.states = left_nfa.states + right_nfa.states
+        empty_nfa.alphabet = left_nfa.alphabet | right_nfa.alphabet
+        empty_nfa.trans_func.update(left_nfa.trans_func)
+        empty_nfa.trans_func.update(right_nfa.trans_func)
+        left_nfa_old_initial_state = left_nfa.initial_state
+        left_nfa_old_final_state = left_nfa.final_state
+        right_nfa_old_initial_state = right_nfa.initial_state
+        right_nfa_old_finale_state = right_nfa.final_state
+
+        empty_nfa.states.remove(right_nfa_old_initial_state)
+
+        for (state, character) in list(empty_nfa.trans_func):
+            if state == right_nfa_old_initial_state:
+                states = empty_nfa.trans_func.pop((state, character))
+                empty_nfa.trans_func.update(
+                    {(left_nfa_old_final_state, character): states}
+                )
+
+        empty_nfa.initial_state = left_nfa_old_initial_state
+        empty_nfa.final_state = right_nfa_old_finale_state
+
+    def _update_trans_func(self, empty_nfa: NFA, source: int, destination: int) -> None:
+        if (source, RegexParser._REGEX_EMPTY_STR) in empty_nfa.trans_func:
+            source_dest_states = empty_nfa.trans_func[
+                (source, RegexParser._REGEX_EMPTY_STR)
+            ]
+            source_dest_states.append(destination)
+        else:
+            empty_nfa.trans_func[(source, RegexParser._REGEX_EMPTY_STR)] = [destination]
 
     def _get_precedence(self, character: str) -> int:
         if character == RegexParser._REGEX_KLEENE_STAR_OP:
