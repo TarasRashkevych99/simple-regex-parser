@@ -154,7 +154,9 @@ class RegexParser:
         empty_nfa.final_state = RegexParser._next_state_id + 1
         RegexParser._next_state_id += 2
         empty_nfa.states.extend((empty_nfa.initial_state, empty_nfa.final_state))
+
         empty_nfa.alphabet.add(character)
+
         empty_nfa.trans_func = {
             (empty_nfa.initial_state, character): [empty_nfa.final_state]
         }
@@ -220,6 +222,36 @@ class RegexParser:
         right_nfa_old_initial_state = right_nfa.initial_state
         right_nfa_old_final_state = right_nfa.final_state
 
+        self._concatenate_right_nfa(
+            empty_nfa, right_nfa, left_nfa_old_final_state, right_nfa_old_initial_state
+        )
+
+        self._update_right_nfa_state_ids(empty_nfa, right_nfa_old_final_state)
+
+        RegexParser._next_state_id -= 1
+
+        empty_nfa.initial_state = left_nfa_old_initial_state
+        empty_nfa.final_state = right_nfa_old_final_state - 1
+
+    def _update_right_nfa_state_ids(
+        self, empty_nfa: NFA, right_nfa_old_final_state: int
+    ) -> None:
+        for (state, character) in list(empty_nfa.trans_func):
+            dest_states = empty_nfa.trans_func[(state, character)]
+            if right_nfa_old_final_state in dest_states:
+                dest_states.remove(right_nfa_old_final_state)
+                dest_states.append(right_nfa_old_final_state - 1)
+
+        empty_nfa.states.remove(right_nfa_old_final_state)
+        empty_nfa.states.append(right_nfa_old_final_state - 1)
+
+    def _concatenate_right_nfa(
+        self,
+        empty_nfa: NFA,
+        right_nfa: NFA,
+        left_nfa_old_final_state: int,
+        right_nfa_old_initial_state: int,
+    ) -> None:
         empty_nfa.states.remove(right_nfa_old_initial_state)
 
         all_possible_trans_from_right_nfa_old_initial_state = [
@@ -230,14 +262,11 @@ class RegexParser:
         )
 
         for (source, character) in all_possible_trans_from_right_nfa_old_initial_state:
-            states = empty_nfa.trans_func.pop((source, character), [])
-            if states != []:
+            source_dest_states = empty_nfa.trans_func.pop((source, character), [])
+            if source_dest_states != []:
                 empty_nfa.trans_func.update(
-                    {(left_nfa_old_final_state, character): states}
+                    {(left_nfa_old_final_state, character): source_dest_states}
                 )
-
-        empty_nfa.initial_state = left_nfa_old_initial_state
-        empty_nfa.final_state = right_nfa_old_final_state
 
     def _update_trans_func(self, empty_nfa: NFA, source: int, destination: int) -> None:
         if (source, RegexParser._REGEX_EMPTY_STR) in empty_nfa.trans_func:
