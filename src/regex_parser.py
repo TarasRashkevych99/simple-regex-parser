@@ -189,14 +189,14 @@ class RegexParser:
         left_nfa_old_initial_state = left_nfa.initial_state
         left_nfa_old_final_state = left_nfa.final_state
         right_nfa_old_initial_state = right_nfa.initial_state
-        right_nfa_old_finale_state = right_nfa.final_state
+        right_nfa_old_final_state = right_nfa.final_state
 
         new_initial_state = RegexParser._next_state_id
         new_final_state = RegexParser._next_state_id + 1
         RegexParser._next_state_id += 2
         empty_nfa.states.extend((new_initial_state, new_final_state))
 
-        self._update_trans_func(empty_nfa, right_nfa_old_finale_state, new_final_state)
+        self._update_trans_func(empty_nfa, right_nfa_old_final_state, new_final_state)
         self._update_trans_func(empty_nfa, left_nfa_old_final_state, new_final_state)
         self._update_trans_func(
             empty_nfa, new_initial_state, right_nfa_old_initial_state
