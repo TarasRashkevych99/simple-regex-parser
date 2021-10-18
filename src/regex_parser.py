@@ -41,7 +41,7 @@ class RegexParser:
         return self._nfa
 
     def recognize_word(self, test_word: str) -> bool:
-        if test_word == "" or test_word is None:
+        if not isinstance(test_word, str):
             return False
 
         epsilon_closure_states = self._execute_epsilon_closure(self.nfa.initial_state)
@@ -362,5 +362,7 @@ if __name__ == "__main__":
         print(f"cccccccd is recognized: {parser.recognize_word('cccccccd')}")
         print(f"ccccccccccccd is recognized: {parser.recognize_word('ccccccccccccd')}")
         print(f"aadfadf is recognized: {parser.recognize_word('aadfadf')}")
+        print(f"None is recognized: {parser.recognize_word(None)}")
+        print(f"234(int data type) is recognized: {parser.recognize_word(234)}")
 
     test()
