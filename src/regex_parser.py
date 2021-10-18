@@ -142,12 +142,19 @@ class RegexParser:
     def _execute_epsilon_closure(self, state: int) -> List[int]:
         stack = []
         already_on = [False for _ in range(len(self.nfa.states))]
-        return self._execute_epsilon_closure_rec(state, stack, already_on)
+        self._execute_epsilon_closure_rec(state, stack, already_on)
+        return stack
 
     def _execute_epsilon_closure_rec(
         self, state: int, stack: List[int], already_on: List[bool]
-    ) -> List[int]:
-        pass
+    ) -> None:
+        stack.append(state)
+        already_on[state] = True
+        for next_state in self.nfa.trans_func.get(
+            (state, RegexParser._REGEX_EMPTY_STR), []
+        ):
+            if not already_on[next_state]:
+                self._execute_epsilon_closure_rec(next_state, stack, already_on)
 
     def _join_on_operand(self, empty_nfa: NFA, character: str) -> None:
         empty_nfa.initial_state = RegexParser._next_state_id
