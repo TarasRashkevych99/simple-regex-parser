@@ -12,10 +12,11 @@ class RegexParser:
     _REGEX_EMPTY_STR = "ε"
     _next_state_id = 0
 
-    def __init__(self, regex: str) -> None:
+    def __init__(self, raw_regex: str) -> None:
         RegexParser._next_state_id = 0
-        self._raw_regex = regex.replace(" ", "")
-        self._preprocessed_regex = self._preprocess_regex(self._raw_regex)
+        self._raw_regex = raw_regex
+        self._purified_regex = self._purify_regex(self._raw_regex)
+        self._preprocessed_regex = self._preprocess_regex(self._purified_regex)
         self._converted_regex = self._convert_regex(self._preprocessed_regex)
         self._expression_tree = self._create_expression_tree(self._converted_regex)
         self._nfa = self._build_nfa(self._expression_tree)
@@ -23,6 +24,10 @@ class RegexParser:
     @property
     def raw_regex(self) -> str:
         return self._raw_regex
+
+    @property
+    def purified_regex(self) -> str:
+        return self._purified_regex
 
     @property
     def preprocessed_regex(self) -> str:
@@ -156,6 +161,12 @@ class RegexParser:
                 preprocessed_regex += current_char
 
         return preprocessed_regex
+
+    def _purify_regex(self, raw_regex: str) -> str:
+        purified_regex = raw_regex.replace(" ", "")
+        purified_regex = purified_regex.replace("ε", "")
+
+        return purified_regex
 
     def _execute_set_epsilon_closure(self, states: Set[int]) -> Set[int]:
         epsilon_closure_states = set()
@@ -351,6 +362,7 @@ if __name__ == "__main__":
         # regex = "(ab|cd)"
         parser = RegexParser(regex)
         print(f"Raw regex in infix notation:\t\t {parser.raw_regex}")
+        print(f"Purified regex in infix notation:\t {parser.purified_regex}")
         print(f"Preprocessed regex in infix notation:\t {parser.preprocessed_regex}")
         print(f"Converted regex in postfix notation:\t {parser.converted_regex}")
         print(parser.expression_tree)
