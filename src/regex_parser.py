@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Set
 from expression_tree import ExprTree
 from nfa import NFA
 
@@ -38,6 +38,23 @@ class RegexParser:
     @property
     def nfa(self) -> NFA:
         return self._nfa
+
+    def recognize_word(self, test_word: str) -> bool:
+        if test_word == "" or test_word is None:
+            return False
+
+        epsilon_closure_states = self._execute_epsilon_closure(self.nfa.initial_state)
+
+        for symbol in test_word:
+            next_states = set()
+            for state in epsilon_closure_states:
+                next_states |= set(self.nfa.trans_func.get((state, symbol), []))
+            epsilon_closure_states = self._execute_set_epsilon_closure(next_states)
+
+        if self.nfa.final_state in epsilon_closure_states:
+            return True
+        else:
+            return False
 
     def _build_nfa(self, root: ExprTree) -> NFA:
         if root is not None:
@@ -139,22 +156,28 @@ class RegexParser:
 
         return preprocessed_regex
 
-    def _execute_epsilon_closure(self, state: int) -> List[int]:
-        stack = []
+    def _execute_set_epsilon_closure(self, states: Set[int]) -> Set[int]:
+        epsilon_closure_states = set()
+        for state in states:
+            epsilon_closure_states |= self._execute_epsilon_closure(state)
+        return epsilon_closure_states
+
+    def _execute_epsilon_closure(self, state: int) -> Set[int]:
+        states = set()
         already_on = [False for _ in range(len(self.nfa.states))]
-        self._execute_epsilon_closure_rec(state, stack, already_on)
-        return stack
+        self._execute_epsilon_closure_rec(state, states, already_on)
+        return states
 
     def _execute_epsilon_closure_rec(
-        self, state: int, stack: List[int], already_on: List[bool]
+        self, state: int, states: Set[int], already_on: List[bool]
     ) -> None:
-        stack.append(state)
+        states.add(state)
         already_on[state] = True
         for next_state in self.nfa.trans_func.get(
             (state, RegexParser._REGEX_EMPTY_STR), []
         ):
             if not already_on[next_state]:
-                self._execute_epsilon_closure_rec(next_state, stack, already_on)
+                self._execute_epsilon_closure_rec(next_state, states, already_on)
 
     def _join_on_operand(self, empty_nfa: NFA, character: str) -> None:
         empty_nfa.initial_state = RegexParser._next_state_id
