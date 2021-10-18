@@ -13,6 +13,7 @@ class RegexParser:
     _next_state_id = 0
 
     def __init__(self, regex: str) -> None:
+        RegexParser._next_state_id = 0
         self._raw_regex = regex.replace(" ", "")
         self._preprocessed_regex = self._preprocess_regex(self._raw_regex)
         self._converted_regex = self._convert_regex(self._preprocessed_regex)
