@@ -2,7 +2,7 @@ import argparse
 from regex_parser import RegexParser
 
 
-def parse_arguments() -> argparse.Namespace:
+def _parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Parse regular expressions and test words againt them"
     )
@@ -12,7 +12,7 @@ def parse_arguments() -> argparse.Namespace:
 
 
 if __name__ == "__main__":
-    args = parse_arguments()
+    args = _parse_arguments()
     regex = args.regex
     parser = RegexParser(regex)
     print(f"Raw regex in infix notation:\t\t {parser.raw_regex}")
