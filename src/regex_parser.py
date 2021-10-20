@@ -2,7 +2,7 @@ from typing import List, Set
 from expression_tree import ExprTree
 from nfa import NFA
 
-
+# TODO Write the documentation
 class RegexParser:
     _REGEX_LEFT_PAR = "("
     _REGEX_RIGHT_PAR = ")"
@@ -163,6 +163,9 @@ class RegexParser:
         return preprocessed_regex
 
     def _purify_regex(self, raw_regex: str) -> str:
+        if not raw_regex:
+            raise ValueError("The regex passed in cannot be empty")
+
         purified_regex = raw_regex.replace(" ", "")
         purified_regex = purified_regex.replace("ε", "")
 
@@ -359,22 +362,39 @@ if __name__ == "__main__":
 
     def test():
         regex = "ab|c*d|asdf|(a(adf)*)"
-        # regex = "(ab|cd)"
         parser = RegexParser(regex)
-        print(f"Raw regex in infix notation:\t\t {parser.raw_regex}")
-        print(f"Purified regex in infix notation:\t {parser.purified_regex}")
-        print(f"Preprocessed regex in infix notation:\t {parser.preprocessed_regex}")
-        print(f"Converted regex in postfix notation:\t {parser.converted_regex}")
-        print(parser.expression_tree)
-        print(parser.nfa)
 
-        print(f"ab is recognized: {parser.recognize_word('ab')}")
-        print(f"cd is recognized: {parser.recognize_word('cd')}")
-        print(f"asdf is recognized: {parser.recognize_word('asdf')}")
-        print(f"cccccccd is recognized: {parser.recognize_word('cccccccd')}")
-        print(f"ccccccccccccd is recognized: {parser.recognize_word('ccccccccccccd')}")
-        print(f"aadfadf is recognized: {parser.recognize_word('aadfadf')}")
-        print(f"None is recognized: {parser.recognize_word(None)}")
-        print(f"234(int data type) is recognized: {parser.recognize_word(234)}")
+        print()
+        print(f"Tests for {parser.raw_regex}:")
+        print()
+
+        test_word = ""
+        print(f'\t" " is recognized: {parser.recognize_word(test_word)}')
+
+        test_word = "ab"
+        print(f'\t"{test_word}" is recognized: {parser.recognize_word(test_word)}')
+
+        test_word = "cd"
+        print(f'\t"{test_word}" is recognized: {parser.recognize_word(test_word)}')
+
+        test_word = "asdf"
+        print(f'\t"{test_word}" is recognized: {parser.recognize_word(test_word)}')
+
+        test_word = "cccccccd"
+        print(f'\t"{test_word}" is recognized: {parser.recognize_word(test_word)}')
+
+        test_word = "ccccccccccccd"
+        print(f'\t"{test_word}" is recognized: {parser.recognize_word(test_word)}')
+
+        test_word = "aadfadf"
+        print(f'\t"{test_word}" is recognized: {parser.recognize_word(test_word)}')
+
+        test_word = None
+        print(f"\t{test_word} is recognized: {parser.recognize_word(test_word)}")
+
+        test_word = 234
+        print(f"\t{test_word} is recognized: {parser.recognize_word(test_word)}")
+
+        print()
 
     test()
