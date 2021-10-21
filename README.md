@@ -116,6 +116,6 @@ The word regex matches the regular expression (r|e|g|e|x)*.
 
 ```
 
-## Conclusion
+## Bug Hunting and Future Maintenance
 
 For bugs, logical errors and feature improvements please create a pull request and let me know what you have in mind 🙂.
