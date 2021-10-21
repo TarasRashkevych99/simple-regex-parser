@@ -63,7 +63,7 @@ The arguments have the following meaning:
 
 In the case of the `regex` argument, the actual regex can be written by simply escaping the
 operators with the `\` character, but it is highly recommended to use double or single quotes
-which don't require any type of escaping, like in the following example :
+which do not require any type of escaping, as in the example below :
 
 ```
 python run_regex_parser.py "(r|e|g|e|x)*" -w regex
