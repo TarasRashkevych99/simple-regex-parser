@@ -25,7 +25,10 @@ input word.
 
 Make shure that you have installed the [Python](https://www.python.org/downloads/) 3.7 interpreter or
 a higher version of it.<br>
-This project has been developed with the Python 3.7.10 interpreter and tested on macOS Big Sur.<br><br>
+This project has been developed with the Python 3.7.10 interpreter and tested on macOS Big Sur 11.6.
+<br>
+This project has also been tested on Windows 10 20H2 and Ubuntu 20.04.3.
+<br><br>
 
 Clone the repository on your machine :
 
@@ -44,6 +47,10 @@ Run inside the `src` folder one the the following command :
 ```
 python run_regex_parser.py regex [-w|--word input_word] [-v|--verbose] [-h|--help]
 ```
+
+> Note : on some platforms the name of the Python interpreter might be `python3`.<br>
+> Note : at the moment it is assumed that the `regex` passed in is well-formed(i.d. it
+> respects the formal definition of the operators).
 
 The arguments have the following meaning:
 
@@ -120,4 +127,5 @@ The word regex matches the regular expression (r|e|g|e|x)*.
 
 ## Bug Hunting and Future Maintenance
 
-For bugs, logical errors and feature improvements please create a pull request and let me know what you have in mind 🙂.
+For bugs, logical errors and feature improvements please create a pull request and let me know what
+you have in mind :slightly_smiling_face:.
