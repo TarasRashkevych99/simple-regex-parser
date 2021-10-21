@@ -60,4 +60,4 @@ which don't require any type of escaping, like in the following example :
 python run_regex_parser.py "(r|e|g|e|x)*" -w regex -v
 ```
 
-The `[-w|--word input_word]` can also be specified by using double or single quotes.
+The `[-w|--word input_word]` argument can also be specified by using double or single quotes.
