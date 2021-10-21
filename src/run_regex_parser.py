@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     if word:
         if parser.recognize_word(word):
-            print(f"The word {word} matches the regular expression {regex}")
+            print(f"The word {word} matches the regular expression {regex}.")
         else:
-            print(f"The word {word} doesn't match the regular expression {regex}")
+            print(f"The word {word} doesn't match the regular expression {regex}.")
         print()
