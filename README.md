@@ -1,6 +1,6 @@
 # Simple Regex Parser
 
-The purpose of this project is to provide a basic implementation of a regex parser that is able to determine whether a word matches a particular regular expression.
+The purpose of this project is to provide a basic implementation of a regex parser that is able to determine whether or not a word matches a particular regular expression.
 
 ## Supported regex operators
 
@@ -57,7 +57,65 @@ operators with the `\` character, but it is highly recommended to use double or 
 which don't require any type of escaping, like in the following example :
 
 ```
-python run_regex_parser.py "(r|e|g|e|x)*" -w regex -v
+python run_regex_parser.py "(r|e|g|e|x)*" -w regex
 ```
 
 The `[-w|--word input_word]` argument can also be specified by using double or single quotes.
+
+## Example of usage
+
+By executing the following command :
+
+```
+python run_regex_parser.py "(r|e|g|e|x)*" -w regex
+```
+
+The expected output should be the following :
+
+```
+Raw regex in infix notation:             (r|e|g|e|x)*
+Generated Expression Tree:
+                          |(*):(|)
+                          |                             (x)
+                          |             (|):(|)(x)
+                          |                                             (e)
+                          |                             (|):(|)(e)
+                          |                                                             (g)
+                          |                                             (|):(|)(g)
+                          |                                                                             (e)
+                          |                                                             (|):(r)(e)
+                          |                                                                             (r)
+
+Generated NFA:
+        Initial State: (18)
+        Final State: ((19))
+        States(20): [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+        Alphabet(4): {'r', 'e', 'g', 'x'}
+        Transition Function(25):
+                                (0, 'r') --> [1]
+                                (2, 'e') --> [3]
+                                (3, 'ε') --> [5]
+                                (1, 'ε') --> [5]
+                                (4, 'ε') --> [2, 0]
+                                (6, 'g') --> [7]
+                                (7, 'ε') --> [9]
+                                (5, 'ε') --> [9]
+                                (8, 'ε') --> [6, 4]
+                               (10, 'e') --> [11]
+                               (11, 'ε') --> [13]
+                                (9, 'ε') --> [13]
+                               (12, 'ε') --> [10, 8]
+                               (14, 'x') --> [15]
+                               (15, 'ε') --> [17]
+                               (13, 'ε') --> [17]
+                               (16, 'ε') --> [14, 12]
+                               (17, 'ε') --> [16, 19]
+                               (18, 'ε') --> [16, 19]
+
+The word regex matches the regular expression (r|e|g|e|x)*.
+
+```
+
+## Conclusion
+
+For bugs, logical errors and feature improvements please create a pull request and let me know what you have in mind 🙂.
