@@ -48,9 +48,9 @@ Run inside the `src` folder one the the following command :
 python run_regex_parser.py regex [-w|--word input_word] [-v|--verbose] [-h|--help]
 ```
 
-> Note : on some platforms the name of the Python interpreter might be `python3`.<br>
-> Note : at the moment it is assumed that the `regex` passed in is well-formed(i.d. it
-> respects the formal definition of the operators).
+**Note** : on some platforms the name of the Python interpreter might be `python3`.<br>
+**Note** : at the moment it is assumed that the `regex` passed in is well-formed(i.d. it
+respects the formal definition of the operators).
 
 The arguments have the following meaning:
 
