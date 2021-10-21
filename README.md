@@ -1,6 +1,7 @@
 # Simple Regex Parser
 
-The purpose of this project is to provide a basic implementation of a regex parser that is able to determine whether or not a word matches a particular regular expression.
+The purpose of this project is to provide a basic implementation of a regex parser that is able to
+determine whether or not a word matches a particular regular expression.
 
 ## Supported regex operators
 
@@ -15,7 +16,8 @@ The following are the operators that are recognized by the parser :
 
 ## Supported characters
 
-The parser **_should_** allow all possible characters, except for the characters that specify the operators described above in the table. Moreover, the `ε` character(formally an empty string)
+The parser **_should_** allow all possible characters, except for the characters that specify the
+operators described above in the table. Moreover, the `ε` character(formally an empty string)
 and the `" "` character(useful for typing but useless for processing) are stripped out from the
 input word.
 
