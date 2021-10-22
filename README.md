@@ -42,7 +42,7 @@ Move to the `simple-regex-parser/src` folder by executing the following command 
 cd simple-regex-parser/src
 ```
 
-Run inside the `src` folder the following command :
+Run the following command inside the `src` folder :
 
 ```
 python run_regex_parser.py regex [-w|--word input_word] [-v|--verbose] [-h|--help]
