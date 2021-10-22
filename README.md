@@ -3,7 +3,7 @@
 The purpose of this project is to provide a basic implementation of a regex parser that is able to
 determine whether or not a word matches a particular regular expression.
 
-## Supported regex operators
+## Operators supported by regex
 
 The following are the operators that are recognized by the parser :
 
@@ -14,12 +14,16 @@ The following are the operators that are recognized by the parser :
 |   .    | Concatenation Operator(Normally Omitted) |   ab    |      a followed by b       |
 |   ()   |           Parenthesis Operator           |   (a)   | a with operator precedence |
 
-## Supported characters
+## Characters supported by regex
 
 The parser **_should_** allow all possible characters, except for the characters that specify the
-operators described above in the table. Moreover, the `ε` character(formally an empty string)
-and the `" "` character(useful for typing but useless for processing) are stripped out from the
-input word.
+operators, as they would be interpreted as operators and not characters.
+
+## Characters supported by input words
+
+The parser **_should_** allow all possible characters, but since the charset used for regex
+doesn't support the characters that are used to indicate the operators, those characters
+should be avoided.
 
 ## How to run the parser on your machine
 
@@ -52,7 +56,7 @@ python run_regex_parser.py regex [-w|--word input_word] [-v|--verbose] [-h|--hel
 **Note** : at the moment it is assumed that the `regex` passed in is well-formed(i.d. it
 respects the formal definition of the operators).
 
-The arguments have the following meaning:
+The arguments have the following meanings:
 
 - `regex` : positional argument that specifies the regex(i.d. the pattern to match against).
 - `[-w|--word input_word]` : optional argument where `input_word` specifies the word to be tested
