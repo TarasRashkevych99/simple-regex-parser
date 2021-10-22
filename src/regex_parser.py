@@ -166,10 +166,7 @@ class RegexParser:
         if not raw_regex:
             raise ValueError("The regex passed in cannot be empty")
 
-        purified_regex = raw_regex.replace(" ", "")
-        purified_regex = purified_regex.replace("ε", "")
-
-        return purified_regex
+        return raw_regex
 
     def _execute_set_epsilon_closure(self, states: Set[int]) -> Set[int]:
         epsilon_closure_states = set()
