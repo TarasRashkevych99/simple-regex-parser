@@ -3,13 +3,14 @@ from expression_tree import ExprTree
 from nfa import NFA
 
 # TODO Write the documentation
+# TODO Implement the escaping mechanism
 class RegexParser:
     _REGEX_LEFT_PAR = "("
     _REGEX_RIGHT_PAR = ")"
     _REGEX_KLEENE_STAR_OP = "*"
     _REGEX_CONCAT_OP = "."
     _REGEX_ALTERNATION_OP = "|"
-    _REGEX_EMPTY_STR = "ε"
+    _REGEX_EMPTY_STR = "_ε"
     _next_state_id = 0
 
     def __init__(self, raw_regex: str) -> None:
@@ -107,10 +108,10 @@ class RegexParser:
 
             if self._is_operand(next_char):
                 converted_regex += next_char
-            elif next_char == RegexParser._REGEX_LEFT_PAR:
-                stack.append(RegexParser._REGEX_LEFT_PAR)
-            elif next_char == RegexParser._REGEX_RIGHT_PAR:
-                while stack[-1] != RegexParser._REGEX_LEFT_PAR:
+            elif self._is_left_parentesis(next_char):
+                stack.append(next_char)
+            elif self._is_right_parentesis(next_char):
+                while not self._is_left_parentesis(stack[-1]):
                     converted_regex += stack.pop()
                 stack.pop()
             else:
@@ -320,11 +321,11 @@ class RegexParser:
             empty_nfa.trans_func[(source, RegexParser._REGEX_EMPTY_STR)] = [destination]
 
     def _get_precedence(self, character: str) -> int:
-        if character == RegexParser._REGEX_KLEENE_STAR_OP:
+        if self._is_kleene_star_operator(character):
             return 3
-        elif character == RegexParser._REGEX_CONCAT_OP:
+        elif self._is_concat_operator(character):
             return 2
-        elif character == RegexParser._REGEX_ALTERNATION_OP:
+        elif self._is_alternation_operator(character):
             return 1
         else:
             return -1
