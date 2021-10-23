@@ -35,7 +35,8 @@ class NFA:
     def _print_trans_func(self) -> str:
         trans_func_repr = ""
         for key in self.trans_func:
-            key_repr = f"({key[0]}, '{key[1]}')"
+            (state, character) = key
+            key_repr = f"({state}, '{character}')"
             trans_func_repr += f"\n{key_repr.rjust(40)} --> {self.trans_func[key]}"
 
         return trans_func_repr
