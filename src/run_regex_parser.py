@@ -27,6 +27,7 @@ if __name__ == "__main__":
 
     parser = RegexParser(regex)
 
+    print()
     print(f"Raw regex in infix notation:\t\t {parser.raw_regex}")
 
     if verbose:
