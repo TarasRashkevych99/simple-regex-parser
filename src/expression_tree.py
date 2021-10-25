@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from simple_data_structures import Character
+
 
 class ExprTree:
     def __init__(
-        self, character: str, left_child: ExprTree = None, right_child: ExprTree = None
+        self,
+        character: Character,
+        left_child: ExprTree = None,
+        right_child: ExprTree = None,
     ) -> None:
         self.left_child = left_child
         self.right_child = right_child
@@ -17,11 +22,14 @@ class ExprTree:
     def _print_expression_tree(self, indentation: int, root: ExprTree) -> str:
         if root is not None:
             right_repr = self._print_expression_tree(indentation + 1, root.right_child)
-            central_repr = "\t\t\t  |" + "\t\t" * indentation + f"({root.character})"
+            (root_symbol, _) = root.character
+            central_repr = "\t\t\t  |" + "\t\t" * indentation + f"({root_symbol})"
             if root.left_child != None:
-                central_repr += f":({root.left_child.character})"
+                (left_child_symbol, _) = root.left_child.character
+                central_repr += f":({left_child_symbol})"
             if root.right_child != None:
-                central_repr += f"({root.right_child.character})"
+                (right_child_symbol, _) = root.right_child.character
+                central_repr += f"({right_child_symbol})"
             central_repr += "\n"
             right_repr += central_repr
             left_repr = self._print_expression_tree(indentation + 1, root.left_child)

@@ -1,9 +1,10 @@
 from typing import List, Set
+from simple_data_structures import Character, CharacterList
 from expression_tree import ExprTree
 from nfa import NFA
 
+
 # TODO Write the documentation
-# TODO Implement the escaping mechanism
 class RegexParser:
     _REGEX_LEFT_PAR = "("
     _REGEX_RIGHT_PAR = ")"
@@ -11,13 +12,14 @@ class RegexParser:
     _REGEX_CONCAT_OP = "."
     _REGEX_ALTERNATION_OP = "|"
     _REGEX_EMPTY_STR = "_ε"
+    _REGEX_ESCAPE_CHAR = "\\"
     _next_state_id = 0
 
     def __init__(self, raw_regex: str) -> None:
         RegexParser._next_state_id = 0
         self._raw_regex = raw_regex
-        self._purified_regex = self._purify_regex(self._raw_regex)
-        self._preprocessed_regex = self._preprocess_regex(self._purified_regex)
+        self._escaped_regex = self._escape_regex(self._raw_regex)
+        self._preprocessed_regex = self._preprocess_regex(self._escaped_regex)
         self._converted_regex = self._convert_regex(self._preprocessed_regex)
         self._expression_tree = self._create_expression_tree(self._converted_regex)
         self._nfa = self._build_nfa(self._expression_tree)
@@ -27,16 +29,16 @@ class RegexParser:
         return self._raw_regex
 
     @property
-    def purified_regex(self) -> str:
-        return self._purified_regex
+    def escaped_regex(self) -> str:
+        return "".join((symbol for (symbol, _) in self._escaped_regex))
 
     @property
     def preprocessed_regex(self) -> str:
-        return self._preprocessed_regex
+        return "".join((symbol for (symbol, _) in self._preprocessed_regex))
 
     @property
     def converted_regex(self) -> str:
-        return self._converted_regex
+        return "".join((symbol for (symbol, _) in self._converted_regex))
 
     @property
     def expression_tree(self) -> ExprTree:
@@ -69,7 +71,8 @@ class RegexParser:
             right_nfa = self._build_nfa(root.right_child)
             empty_nfa = NFA()
             if self._is_operand(root.character):
-                self._join_on_operand(empty_nfa, root.character)
+                (symbol, _) = root.character
+                self._join_on_operand(empty_nfa, symbol)
             elif self._is_kleene_star_operator(root.character):
                 self._join_on_kleene_star_operator(empty_nfa, left_nfa)
             elif self._is_alternation_operator(root.character):
@@ -99,40 +102,40 @@ class RegexParser:
 
         return stack[-1]
 
-    def _convert_regex(self, preprocessed_regex: str) -> str:
-        stack: List[str] = []
-        converted_regex = ""
+    def _convert_regex(self, preprocessed_regex: CharacterList) -> CharacterList:
+        stack: CharacterList = []
+        converted_regex: CharacterList = []
 
-        for i in range(len(preprocessed_regex)):
-            next_char = preprocessed_regex[i]
+        for character in preprocessed_regex:
+            next_char = character
 
             if self._is_operand(next_char):
-                converted_regex += next_char
-            elif self._is_left_parentesis(next_char):
+                converted_regex.append(next_char)
+            elif self._is_left_parenthesis(next_char):
                 stack.append(next_char)
-            elif self._is_right_parentesis(next_char):
-                while not self._is_left_parentesis(stack[-1]):
-                    converted_regex += stack.pop()
+            elif self._is_right_parenthesis(next_char):
+                while not self._is_left_parenthesis(stack[-1]):
+                    converted_regex.append(stack.pop())
                 stack.pop()
             else:
                 while len(stack) != 0 and self._get_precedence(
                     next_char
                 ) <= self._get_precedence(stack[-1]):
-                    converted_regex += stack.pop()
+                    converted_regex.append(stack.pop())
                 stack.append(next_char)
 
         while len(stack) != 0:
-            converted_regex += stack.pop()
+            converted_regex.append(stack.pop())
 
         return converted_regex
 
-    def _preprocess_regex(self, raw_regex: str) -> str:
-        preprocessed_regex = ""
-        pred_char = ""
-        current_char = ""
-        for i in range(len(raw_regex)):
+    def _preprocess_regex(self, escaped_regex: CharacterList) -> CharacterList:
+        preprocessed_regex: CharacterList = []
+        pred_char = ("", False)
+        current_char = ("", False)
+        for character in escaped_regex:
             pred_char = current_char
-            current_char = raw_regex[i]
+            current_char = character
 
             if (
                 (self._is_operand(pred_char) and self._is_operand(current_char))
@@ -142,32 +145,43 @@ class RegexParser:
                 )
                 or (
                     self._is_kleene_star_operator(pred_char)
-                    and self._is_left_parentesis(current_char)
+                    and self._is_left_parenthesis(current_char)
                 )
                 or (
-                    self._is_left_parentesis(pred_char)
-                    and self._is_right_parentesis(current_char)
+                    self._is_left_parenthesis(pred_char)
+                    and self._is_right_parenthesis(current_char)
                 )
                 or (
-                    self._is_right_parentesis(pred_char)
+                    self._is_right_parenthesis(pred_char)
                     and self._is_operand(current_char)
                 )
                 or (
                     self._is_operand(pred_char)
-                    and self._is_left_parentesis(current_char)
+                    and self._is_left_parenthesis(current_char)
                 )
             ):
-                preprocessed_regex += RegexParser._REGEX_CONCAT_OP + current_char
+                preprocessed_regex.extend(
+                    ((RegexParser._REGEX_CONCAT_OP, False), current_char)
+                )
             else:
-                preprocessed_regex += current_char
+                preprocessed_regex.append(current_char)
 
         return preprocessed_regex
 
-    def _purify_regex(self, raw_regex: str) -> str:
+    def _escape_regex(self, raw_regex: str) -> CharacterList:
         if not raw_regex:
             raise ValueError("The regex passed in cannot be empty")
 
-        return raw_regex
+        escaped_regex: CharacterList = []
+        escaped = False
+        for symbol in raw_regex:
+            if self._is_escape_character((symbol, escaped)):
+                escaped = True
+            else:
+                escaped_regex.append((symbol, escaped))
+                escaped = False
+
+        return escaped_regex
 
     def _execute_set_epsilon_closure(self, states: Set[int]) -> Set[int]:
         epsilon_closure_states = set()
@@ -320,7 +334,7 @@ class RegexParser:
         else:
             empty_nfa.trans_func[(source, RegexParser._REGEX_EMPTY_STR)] = [destination]
 
-    def _get_precedence(self, character: str) -> int:
+    def _get_precedence(self, character: Character) -> int:
         if self._is_kleene_star_operator(character):
             return 3
         elif self._is_concat_operator(character):
@@ -330,36 +344,48 @@ class RegexParser:
         else:
             return -1
 
-    def _is_operand(self, character: str) -> bool:
-        return (
-            character != ""
-            and character != RegexParser._REGEX_KLEENE_STAR_OP
-            and character != RegexParser._REGEX_CONCAT_OP
-            and character != RegexParser._REGEX_ALTERNATION_OP
-            and character != RegexParser._REGEX_LEFT_PAR
-            and character != RegexParser._REGEX_RIGHT_PAR
+    def _is_operand(self, character: Character) -> bool:
+        (symbol, escaped) = character
+        return symbol != "" and (
+            (
+                symbol != RegexParser._REGEX_KLEENE_STAR_OP
+                and symbol != RegexParser._REGEX_CONCAT_OP
+                and symbol != RegexParser._REGEX_ALTERNATION_OP
+                and symbol != RegexParser._REGEX_LEFT_PAR
+                and symbol != RegexParser._REGEX_RIGHT_PAR
+            )
+            or escaped
         )
 
-    def _is_concat_operator(self, character: str) -> bool:
-        return character == RegexParser._REGEX_CONCAT_OP
+    def _is_concat_operator(self, character: Character) -> bool:
+        (symbol, escaped) = character
+        return symbol == RegexParser._REGEX_CONCAT_OP and not escaped
 
-    def _is_alternation_operator(self, character: str) -> bool:
-        return character == RegexParser._REGEX_ALTERNATION_OP
+    def _is_alternation_operator(self, character: Character) -> bool:
+        (symbol, escaped) = character
+        return symbol == RegexParser._REGEX_ALTERNATION_OP and not escaped
 
-    def _is_kleene_star_operator(self, character: str) -> bool:
-        return character == RegexParser._REGEX_KLEENE_STAR_OP
+    def _is_kleene_star_operator(self, character: Character) -> bool:
+        (symbol, escaped) = character
+        return symbol == RegexParser._REGEX_KLEENE_STAR_OP and not escaped
 
-    def _is_left_parentesis(self, character: str) -> bool:
-        return character == RegexParser._REGEX_LEFT_PAR
+    def _is_left_parenthesis(self, character: Character) -> bool:
+        (symbol, escaped) = character
+        return symbol == RegexParser._REGEX_LEFT_PAR and not escaped
 
-    def _is_right_parentesis(self, character: str) -> bool:
-        return character == RegexParser._REGEX_RIGHT_PAR
+    def _is_right_parenthesis(self, character: Character) -> bool:
+        (symbol, escaped) = character
+        return symbol == RegexParser._REGEX_RIGHT_PAR and not escaped
+
+    def _is_escape_character(self, character: Character) -> bool:
+        (symbol, escaped) = character
+        return symbol == RegexParser._REGEX_ESCAPE_CHAR and not escaped
 
 
 if __name__ == "__main__":
 
     def test():
-        regex = "ab|c*d|asdf|(a(adf)*)"
+        regex = "ab|c*d|asdf|(a(adf)*)|(\*s*\))"
         parser = RegexParser(regex)
 
         print()
@@ -386,6 +412,12 @@ if __name__ == "__main__":
 
         test_word = "aadfadf"
         print(f'\t"{test_word}" is recognized: {parser.recognize_word(test_word)}')
+
+        test_word = "*ssssss)"
+        print(f"\t{test_word} is recognized: {parser.recognize_word(test_word)}")
+
+        test_word = "*)"
+        print(f"\t{test_word} is recognized: {parser.recognize_word(test_word)}")
 
         test_word = None
         print(f"\t{test_word} is recognized: {parser.recognize_word(test_word)}")
