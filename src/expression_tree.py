@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from regex_parser import Character
+from simple_data_structures import Character
 
 
 class ExprTree:

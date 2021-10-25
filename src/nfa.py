@@ -1,8 +1,6 @@
 from __future__ import annotations
 from typing import Dict, List, Set, Tuple
-
-
-TransFunc = Dict[Tuple[int, str], List[int]]
+from simple_data_structures import TransFunc
 
 
 class NFA:
