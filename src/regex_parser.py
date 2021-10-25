@@ -1,12 +1,10 @@
-from typing import List, Set, Tuple
+from typing import List, Set
+from simple_data_structures import Character, CharacterList
 from expression_tree import ExprTree
 from nfa import NFA
 
-Character = Tuple[str, int]
-CharacterList = List[Character]
 
 # TODO Write the documentation
-# TODO Implement the escaping mechanism
 class RegexParser:
     _REGEX_LEFT_PAR = "("
     _REGEX_RIGHT_PAR = ")"
@@ -24,7 +22,7 @@ class RegexParser:
         self._preprocessed_regex = self._preprocess_regex(self._escaped_regex)
         self._converted_regex = self._convert_regex(self._preprocessed_regex)
         self._expression_tree = self._create_expression_tree(self._converted_regex)
-        # self._nfa = self._build_nfa(self._expression_tree)
+        self._nfa = self._build_nfa(self._expression_tree)
 
     @property
     def raw_regex(self) -> str:
@@ -73,7 +71,8 @@ class RegexParser:
             right_nfa = self._build_nfa(root.right_child)
             empty_nfa = NFA()
             if self._is_operand(root.character):
-                self._join_on_operand(empty_nfa, root.character)
+                (symbol, _) = root.character
+                self._join_on_operand(empty_nfa, symbol)
             elif self._is_kleene_star_operator(root.character):
                 self._join_on_kleene_star_operator(empty_nfa, left_nfa)
             elif self._is_alternation_operator(root.character):
