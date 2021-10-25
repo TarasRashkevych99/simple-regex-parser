@@ -11,8 +11,8 @@ class RegexParser:
     _REGEX_KLEENE_STAR_OP = "*"
     _REGEX_CONCAT_OP = "."
     _REGEX_ALTERNATION_OP = "|"
+    _REGEX_ESCAPE_OP = "\\"
     _REGEX_EMPTY_STR = "_ε"
-    _REGEX_ESCAPE_CHAR = "\\"
     _next_state_id = 0
 
     def __init__(self, raw_regex: str) -> None:
@@ -175,7 +175,7 @@ class RegexParser:
         escaped_regex: CharacterList = []
         escaped = False
         for symbol in raw_regex:
-            if self._is_escape_character((symbol, escaped)):
+            if self._is_escape_operator((symbol, escaped)):
                 escaped = True
             else:
                 escaped_regex.append((symbol, escaped))
@@ -369,6 +369,10 @@ class RegexParser:
         (symbol, escaped) = character
         return symbol == RegexParser._REGEX_KLEENE_STAR_OP and not escaped
 
+    def _is_escape_operator(self, character: Character) -> bool:
+        (symbol, escaped) = character
+        return symbol == RegexParser._REGEX_ESCAPE_OP and not escaped
+
     def _is_left_parenthesis(self, character: Character) -> bool:
         (symbol, escaped) = character
         return symbol == RegexParser._REGEX_LEFT_PAR and not escaped
@@ -376,10 +380,6 @@ class RegexParser:
     def _is_right_parenthesis(self, character: Character) -> bool:
         (symbol, escaped) = character
         return symbol == RegexParser._REGEX_RIGHT_PAR and not escaped
-
-    def _is_escape_character(self, character: Character) -> bool:
-        (symbol, escaped) = character
-        return symbol == RegexParser._REGEX_ESCAPE_CHAR and not escaped
 
 
 if __name__ == "__main__":
