@@ -385,7 +385,7 @@ class RegexParser:
 if __name__ == "__main__":
 
     def test():
-        regex = "ab|c*d|asdf|(a(adf)*)"
+        regex = "ab|c*d|asdf|(a(adf)*)|(\*s*\))"
         parser = RegexParser(regex)
 
         print()
@@ -412,6 +412,12 @@ if __name__ == "__main__":
 
         test_word = "aadfadf"
         print(f'\t"{test_word}" is recognized: {parser.recognize_word(test_word)}')
+
+        test_word = "*ssssss)"
+        print(f"\t{test_word} is recognized: {parser.recognize_word(test_word)}")
+
+        test_word = "*)"
+        print(f"\t{test_word} is recognized: {parser.recognize_word(test_word)}")
 
         test_word = None
         print(f"\t{test_word} is recognized: {parser.recognize_word(test_word)}")
