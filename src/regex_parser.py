@@ -6,6 +6,10 @@ from nfa import NFA
 
 # TODO Write the documentation
 class RegexParser:
+    """
+    The main class that implements the core functionalities.
+    """
+
     _REGEX_LEFT_PAR = "("
     _REGEX_RIGHT_PAR = ")"
     _REGEX_KLEENE_STAR_OP = "*"
@@ -16,6 +20,13 @@ class RegexParser:
     _next_state_id = 0
 
     def __init__(self, raw_regex: str) -> None:
+        """Initializes the parser with all the data necessary to correctly parse the regular expression and test it with input words.
+
+        Parameters
+        ----------
+        raw_regex : str
+            the raw regex that has to be parsed.
+        """
         self._raw_regex = raw_regex
         self._escaped_regex = self._escape_regex(self._raw_regex)
         self._preprocessed_regex = self._preprocess_regex(self._escaped_regex)
@@ -25,26 +36,68 @@ class RegexParser:
 
     @property
     def raw_regex(self) -> str:
+        """Returns the raw regex that was passed in when the parser was created.
+
+        Returns
+        -------
+        str
+            the raw regex that was passed in when the parser was created.
+        """
         return self._raw_regex
 
     @property
     def escaped_regex(self) -> str:
+        """Returns the escaped regex obtained by escaping the specified characters in the raw regex.
+
+        Returns
+        -------
+        str
+            the escaped regex obtained by escaping the specified characters in the raw regex.
+        """
         return "".join((symbol for (symbol, _) in self._escaped_regex))
 
     @property
     def preprocessed_regex(self) -> str:
+        """Returns the preprocessed regex obtained by inserting the concat operator into the escaped regex.
+
+        Returns
+        -------
+        str
+            the preprocessed regex obtained by inserting the concat operator into the escaped regex.
+        """
         return "".join((symbol for (symbol, _) in self._preprocessed_regex))
 
     @property
     def converted_regex(self) -> str:
+        """Returns the converted regex obtained by converting the preprocessed regex into its postfix notation. 
+
+        Returns
+        -------
+        str
+            the converted regex obtained by converting the preprocessed regex into its postfix notation.
+        """
         return "".join((symbol for (symbol, _) in self._converted_regex))
 
     @property
     def expression_tree(self) -> ExprTree:
+        """Returns the expression tree obtained by creating it from the converted regex.
+
+        Returns
+        -------
+        ExprTree
+            the expression tree obtained by creating it from the converted regex.
+        """
         return self._expression_tree
 
     @property
     def nfa(self) -> NFA:
+        """Returns the NFA(Non-deterministic Finite Automaton) obtained by building it from the expression tree.
+
+        Returns
+        -------
+        NFA
+            the NFA(Non-deterministic Finite Automaton) obtained by building it from the expression tree.
+        """
         return self._nfa
 
     def recognize_word(self, test_word: str) -> bool:
