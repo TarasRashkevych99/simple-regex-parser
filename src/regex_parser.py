@@ -16,13 +16,12 @@ class RegexParser:
     _next_state_id = 0
 
     def __init__(self, raw_regex: str) -> None:
-        RegexParser._next_state_id = 0
         self._raw_regex = raw_regex
         self._escaped_regex = self._escape_regex(self._raw_regex)
         self._preprocessed_regex = self._preprocess_regex(self._escaped_regex)
         self._converted_regex = self._convert_regex(self._preprocessed_regex)
         self._expression_tree = self._create_expression_tree(self._converted_regex)
-        self._nfa = self._build_nfa(self._expression_tree)
+        self._nfa = self._build_nfa_rec(self._expression_tree)
 
     @property
     def raw_regex(self) -> str:
@@ -66,9 +65,14 @@ class RegexParser:
             return False
 
     def _build_nfa(self, root: ExprTree) -> NFA:
+        nfa = self._build_nfa_rec(root)
+        RegexParser._next_state_id = 0
+        return nfa
+
+    def _build_nfa_rec(self, root: ExprTree) -> NFA:
         if root is not None:
-            left_nfa = self._build_nfa(root.left_child)
-            right_nfa = self._build_nfa(root.right_child)
+            left_nfa = self._build_nfa_rec(root.left_child)
+            right_nfa = self._build_nfa_rec(root.right_child)
             empty_nfa = NFA()
             if self._is_operand(root.character):
                 (symbol, _) = root.character
