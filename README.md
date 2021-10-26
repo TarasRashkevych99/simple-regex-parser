@@ -7,23 +7,13 @@ determine whether or not a word matches a particular regular expression.
 
 The following are the operators that are recognized by the parser :
 
-| Symbol |               Formal Name                | Example |        Description         |
-| :----: | :--------------------------------------: | :-----: | :------------------------: |
-|   \*   |     Kleene Operator(or Kleene Star)      |   a\*   | 0 or more occurrences of a |
-|   \|   | Alternation Operator(or Union Operator)  |  a\|b   |           a or b           |
-|   .    | Concatenation Operator(Normally Omitted) |   ab    |      a followed by b       |
-|   ()   |           Parenthesis Operator           |   (a)   | a with operator precedence |
-
-## Characters supported by regex
-
-The parser **_should_** allow all possible characters, except for the characters that specify the
-operators, as they would be interpreted as operators and not characters.
-
-## Characters supported by input words
-
-The parser **_should_** allow all possible characters, but since the charset used for regex
-doesn't support the characters that are used to indicate the operators, those characters
-should be avoided.
+| Operator |               Formal Name                | Example |         Description          |
+| :------: | :--------------------------------------: | :-----: | :--------------------------: |
+|    \*    |     Kleene Operator(or Kleene Star)      |   a\*   |  0 or more occurrences of a  |
+|    \|    | Alternation Operator(or Union Operator)  |  a\|b   |            a or b            |
+|    .     | Concatenation Operator(Normally Omitted) |   ab    |       a followed by b        |
+|    ()    |           Parenthesis Operator           |   (a)   |  a with operator precedence  |
+|    \\    |             Escape Operator              |  \\\*   | '\*' with no special meaning |
 
 ## How to run the parser on your machine
 
@@ -61,26 +51,24 @@ The arguments have the following meanings:
 - `regex` : positional argument that specifies the regex(i.d. the pattern to match against).
 - `[-w|--word input_word]` : optional argument where `input_word` specifies the word to be tested
   against the regex.
-- `[-v|--verbose]` : optional argument that specifies how detailed the output will be.
-- `[-h|--help]` : optional argument that describes the purpose of the program and of each and every
-  argument passed to it.
+- `[-v|--verbose]` : optional argument that specifies how detailed the output should be.
+- `[-h|--help]` : optional argument that describes the purpose of the program and of each argument
+  passed to it.
 
-In the case of the `regex` argument, the actual regex can be written by simply escaping the
-operators with the `\` character, but it is highly recommended to use double or single quotes
-which do not require any type of escaping, as in the example below :
+**Note** : in the case of the `regex` and `[-w|--word input_word]` arguments, it is highly
+recommended to use double or single quotes, which significantly simplifies the way they are
+written, as in the example below :
 
 ```
-python run_regex_parser.py "(r|e|g|e|x)*" -w regex
+python run_regex_parser.py "(p|a|r|s|e|r)*" -w "parser"
 ```
-
-The `[-w|--word input_word]` argument can also be specified by using double or single quotes.
 
 ## Example of usage
 
 By executing the following command :
 
 ```
-python run_regex_parser.py "(r|e|g|e|x)*" -w regex
+python run_regex_parser.py "(r|e|g|e|x)*" -w "regex"
 ```
 
 The expected output should be the following :
@@ -103,27 +91,27 @@ Generated NFA:
         Initial State: (18)
         Final State: ((19))
         States(20): [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-        Alphabet(4): {'r', 'e', 'g', 'x'}
+        Alphabet(4): {'e', 'g', 'r', 'x'}
         Transition Function(25):
                                 (0, 'r') --> [1]
                                 (2, 'e') --> [3]
-                                (3, 'ε') --> [5]
-                                (1, 'ε') --> [5]
-                                (4, 'ε') --> [2, 0]
+                               (3, '_ε') --> [5]
+                               (1, '_ε') --> [5]
+                               (4, '_ε') --> [2, 0]
                                 (6, 'g') --> [7]
-                                (7, 'ε') --> [9]
-                                (5, 'ε') --> [9]
-                                (8, 'ε') --> [6, 4]
+                               (7, '_ε') --> [9]
+                               (5, '_ε') --> [9]
+                               (8, '_ε') --> [6, 4]
                                (10, 'e') --> [11]
-                               (11, 'ε') --> [13]
-                                (9, 'ε') --> [13]
-                               (12, 'ε') --> [10, 8]
+                              (11, '_ε') --> [13]
+                               (9, '_ε') --> [13]
+                              (12, '_ε') --> [10, 8]
                                (14, 'x') --> [15]
-                               (15, 'ε') --> [17]
-                               (13, 'ε') --> [17]
-                               (16, 'ε') --> [14, 12]
-                               (17, 'ε') --> [16, 19]
-                               (18, 'ε') --> [16, 19]
+                              (15, '_ε') --> [17]
+                              (13, '_ε') --> [17]
+                              (16, '_ε') --> [14, 12]
+                              (17, '_ε') --> [16, 19]
+                              (18, '_ε') --> [16, 19]
 
 The word regex matches the regular expression (r|e|g|e|x)*.
 
