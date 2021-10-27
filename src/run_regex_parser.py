@@ -1,11 +1,21 @@
+"""
+This script allows parsing regular expressions and testing words against them.
+"""
+
 import argparse
 from regex_parser import RegexParser
 
 
 def _parse_arguments() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Parse regular expressions and test words against them"
-    )
+    """Parses the arguments passed in from the command line.
+
+    Returns
+    -------
+    argparse.Namespace
+        The arguments after being parsed.
+    """
+
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("regex", help="the non-empty regex to be parsed")
     parser.add_argument("--word", "-w", help="the word to be tested against the regex")
     parser.add_argument(
