@@ -12,6 +12,7 @@ class NFA:
         """
         Initializes an empty NFA
         """
+
         self.states: List[int] = []
         self.alphabet: Set[str] = set()
         self.initial_state: int = -1
@@ -26,6 +27,7 @@ class NFA:
         str
             The string representation of the NFA.
         """
+
         nfa_repr = "Generated NFA:\n"
         nfa_repr += f"\tInitial State: ({self.initial_state})\n"
         nfa_repr += f"\tFinal State: (({self.final_state}))\n"
@@ -44,6 +46,7 @@ class NFA:
         str
             The string representation of the NFA alphabet.
         """
+
         alphabet_repr = "{"
         alphabet = sorted(self.alphabet)
         alphabet_repr += ", ".join("'" + character + "'" for character in alphabet)
@@ -59,6 +62,7 @@ class NFA:
         str
             The string representation of the NFA transition function.
         """
+
         trans_func_repr = ""
         for key in self.trans_func:
             (state, character) = key
@@ -75,4 +79,5 @@ class NFA:
         int
             The number of edges of the NFA.
         """
+
         return sum((len(self.trans_func[key]) for key in self.trans_func))
