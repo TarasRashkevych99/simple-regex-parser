@@ -344,12 +344,48 @@ class RegexParser:
         return escaped_regex
 
     def _execute_set_epsilon_closure(self, states: Set[int]) -> Set[int]:
+        """Executes the so-called epsilon closure procedure on a set of states.
+
+        This particular procedure consists in getting all those states that are reachable from 
+        a particular initial set of states through the so-called ε-transitions, which are transitions 
+        labeled with _ε symbol, which formally denotes the empty string. The original initial
+        set of states is always part of the final set of states.
+
+        Parameters
+        ----------
+        states : Set[int]
+            The set of states from which the epsilon closure procedure is executed.
+
+        Returns
+        -------
+        Set[int]
+            The set of states that have been reached through the epsilon closure procedure.
+        """
+
         epsilon_closure_states = set()
         for state in states:
             epsilon_closure_states |= self._execute_epsilon_closure(state)
         return epsilon_closure_states
 
     def _execute_epsilon_closure(self, state: int) -> Set[int]:
+        """Executes the so-called epsilon closure procedure on a particular initial state.
+
+        This particular procedure consists in getting all those states that are reachable from 
+        a particular initial state through the so-called ε-transitions, which are transitions 
+        labeled with _ε symbol, which formally denotes the empty string. The original initial
+        state is always part of the final set of states.
+
+        Parameters
+        ----------
+        state : int
+            The initial state from which the epsilon closure procedure is executed.
+
+        Returns
+        -------
+        Set[int]
+            The set of states that have been reached through the epsilon closure procedure.
+        """
+
         states = set()
         already_on = [False for _ in range(len(self.nfa.states))]
         self._execute_epsilon_closure_rec(state, states, already_on)
@@ -358,6 +394,23 @@ class RegexParser:
     def _execute_epsilon_closure_rec(
         self, state: int, states: Set[int], already_on: List[bool]
     ) -> None:
+        """Recursively executes the so-called epsilon closure procedure on a particular initial state.
+
+        This particular procedure consists in getting all those states that are reachable from 
+        a particular initial state through the so-called ε-transitions, which are transitions 
+        labeled with _ε symbol, which formally denotes the empty string. The original initial
+        state is always part of the final set of states.
+
+        Parameters
+        ----------
+        state : int
+            The initial state form which the epsilon closure procedure is executed.
+        states : Set[int]
+            The set of states that have been reached through the epsilon closure procedure.
+        already_on : List[bool]
+            The list of boolean values indicating whether a particular state has been already added to the set of states.  
+        """
+
         states.add(state)
         already_on[state] = True
         for next_state in self.nfa.trans_func.get(
@@ -367,6 +420,16 @@ class RegexParser:
                 self._execute_epsilon_closure_rec(next_state, states, already_on)
 
     def _join_on_operand(self, empty_nfa: NFA, character: str) -> None:
+        """Builds the 2-state NFA with a single transition labeled with the character passed in, when the character is not an operator.
+
+        Parameters
+        ----------
+        empty_nfa : NFA
+            A completely empty NFA to be modified through this method.
+        character : str
+            The character that will label the only transition in the NFA.
+        """
+
         empty_nfa.initial_state = RegexParser._next_state_id
         empty_nfa.final_state = RegexParser._next_state_id + 1
         RegexParser._next_state_id += 2
@@ -379,6 +442,16 @@ class RegexParser:
         }
 
     def _join_on_kleene_star_operator(self, empty_nfa: NFA, left_nfa: NFA) -> None:
+        """Joins the two NFAs when the character is the Kleene star operator.
+
+        Parameters
+        ----------
+        empty_nfa : NFA
+            A completely empty NFA to be modified through this method.
+        left_nfa : NFA
+            The NFA that appears as the left child of an expression tree node containing the Kleene star operator. 
+        """
+
         empty_nfa.states = left_nfa.states
         empty_nfa.alphabet = left_nfa.alphabet
         empty_nfa.trans_func = left_nfa.trans_func
@@ -401,6 +474,18 @@ class RegexParser:
     def _join_on_alternation_operator(
         self, empty_nfa: NFA, left_nfa: NFA, right_nfa: NFA
     ) -> None:
+        """Joins the two NFAs when the character is the alternation operator.
+
+        Parameters
+        ----------
+        empty_nfa : NFA
+            A completely empty NFA to be modified through this method.
+        left_nfa : NFA
+            The NFA that appears as the left child of an expression tree node containing the alternation operator.
+        right_nfa : NFA
+            The NFA that appears as the right child of an expression tree node containing the alternation operator.
+        """
+
         empty_nfa.states = left_nfa.states + right_nfa.states
         empty_nfa.alphabet = left_nfa.alphabet | right_nfa.alphabet
         empty_nfa.trans_func.update(left_nfa.trans_func)
@@ -430,6 +515,18 @@ class RegexParser:
     def _join_on_concat_operator(
         self, empty_nfa: NFA, left_nfa: NFA, right_nfa: NFA
     ) -> None:
+        """Joins the two NFAs when the character is the concatenation operator.
+
+        Parameters
+        ----------
+        empty_nfa : NFA
+            A completely empty NFA to be modified through this method.
+        left_nfa : NFA
+            The NFA that appears as the left child of an expression tree node containing the concatenation operator.
+        right_nfa : NFA
+            The NFA that appears as the right child of an expression tree node containing the concatenation operator.
+        """
+
         empty_nfa.states = left_nfa.states + right_nfa.states
         empty_nfa.alphabet = left_nfa.alphabet | right_nfa.alphabet
         empty_nfa.trans_func.update(left_nfa.trans_func)
@@ -451,50 +548,103 @@ class RegexParser:
         empty_nfa.final_state = right_nfa_old_final_state - 1
 
     def _update_right_nfa_state_ids(
-        self, empty_nfa: NFA, right_nfa_old_final_state: int
+        self, partial_nfa: NFA, right_nfa_final_state: int
     ) -> None:
-        for (state, character) in list(empty_nfa.trans_func):
-            dest_states = empty_nfa.trans_func[(state, character)]
-            if right_nfa_old_final_state in dest_states:
-                dest_states.remove(right_nfa_old_final_state)
-                dest_states.append(right_nfa_old_final_state - 1)
+        """Updates the ids of the NFA passed in because of the inconsistency that appears during the execution of the _join_on_concat_operator() method.
 
-        empty_nfa.states.remove(right_nfa_old_final_state)
-        empty_nfa.states.append(right_nfa_old_final_state - 1)
+        Parameters
+        ----------
+        partial_nfa : NFA
+            The NFA whose ids have to be updated.
+        right_nfa_old_final_state : int
+            The final state of the NFA that appears as the right child of an expression tree node containing the concatenation operator. 
+        """
+
+        for (state, character) in list(partial_nfa.trans_func):
+            dest_states = partial_nfa.trans_func[(state, character)]
+            if right_nfa_final_state in dest_states:
+                dest_states.remove(right_nfa_final_state)
+                dest_states.append(right_nfa_final_state - 1)
+
+        partial_nfa.states.remove(right_nfa_final_state)
+        partial_nfa.states.append(right_nfa_final_state - 1)
 
     def _concatenate_right_nfa(
         self,
-        empty_nfa: NFA,
+        partial_nfa: NFA,
         right_nfa: NFA,
-        left_nfa_old_final_state: int,
-        right_nfa_old_initial_state: int,
+        left_nfa_final_state: int,
+        right_nfa_initial_state: int,
     ) -> None:
-        empty_nfa.states.remove(right_nfa_old_initial_state)
+        """Concatenates the two NFAs. 
+
+        Parameters
+        ----------
+        partial_nfa : NFA
+            The NFA to concatenate to.
+        right_nfa : NFA
+            The NFA that has to be concatenated.
+        left_nfa_final_state : int
+            The final state of the NFA that appears as the left child of an expression tree node containing the concatenation operator.
+        right_nfa_initial_state : int
+            The initial state of the NFA that appears as the right child of an expression tree node containing the concatenation operator.
+        """
+
+        partial_nfa.states.remove(right_nfa_initial_state)
 
         all_possible_trans_from_right_nfa_old_initial_state = [
-            (right_nfa_old_initial_state, character) for character in right_nfa.alphabet
+            (right_nfa_initial_state, character) for character in right_nfa.alphabet
         ]
         all_possible_trans_from_right_nfa_old_initial_state.append(
-            (right_nfa_old_initial_state, RegexParser._REGEX_EMPTY_STR)
+            (right_nfa_initial_state, RegexParser._REGEX_EMPTY_STR)
         )
 
         for (source, character) in all_possible_trans_from_right_nfa_old_initial_state:
-            source_dest_states = empty_nfa.trans_func.pop((source, character), [])
+            source_dest_states = partial_nfa.trans_func.pop((source, character), [])
             if source_dest_states != []:
-                empty_nfa.trans_func.update(
-                    {(left_nfa_old_final_state, character): source_dest_states}
+                partial_nfa.trans_func.update(
+                    {(left_nfa_final_state, character): source_dest_states}
                 )
 
-    def _update_trans_func(self, empty_nfa: NFA, source: int, destination: int) -> None:
-        if (source, RegexParser._REGEX_EMPTY_STR) in empty_nfa.trans_func:
-            source_dest_states = empty_nfa.trans_func[
+    def _update_trans_func(
+        self, partial_nfa: NFA, source: int, destination: int
+    ) -> None:
+        """Adds a new ε-transition from the source state to the destination state.
+
+        Parameters
+        ----------
+        partial_nfa : NFA
+            The NFA in which to insert the new ε-transition.
+        source : int
+            The state in which the new ε-transition begins.
+        destination : int
+            The state in which the new ε-transition ends.
+        """
+
+        if (source, RegexParser._REGEX_EMPTY_STR) in partial_nfa.trans_func:
+            source_dest_states = partial_nfa.trans_func[
                 (source, RegexParser._REGEX_EMPTY_STR)
             ]
             source_dest_states.append(destination)
         else:
-            empty_nfa.trans_func[(source, RegexParser._REGEX_EMPTY_STR)] = [destination]
+            partial_nfa.trans_func[(source, RegexParser._REGEX_EMPTY_STR)] = [
+                destination
+            ]
 
     def _get_precedence(self, character: Character) -> int:
+        """Specifies the precedence order of the character passed in to correctly create the converted regex.
+
+        Parameters
+        ----------
+        character : Character
+            The character whose precedence order has to be specified.
+
+        Returns
+        -------
+        int
+            The precedence order of the character passed in.
+        """
+
         if self._is_kleene_star_operator(character):
             return 3
         elif self._is_concat_operator(character):
@@ -505,6 +655,19 @@ class RegexParser:
             return -1
 
     def _is_operand(self, character: Character) -> bool:
+        """Specifies whether the character passed in is an operand or not.
+
+        Parameters
+        ----------
+        character : Character
+            The character to be tested.
+
+        Returns
+        -------
+        bool
+            A boolean indicating whether the character passed in is an operand or not.
+        """
+
         (symbol, escaped) = character
         return symbol != "" and (
             (
@@ -518,26 +681,104 @@ class RegexParser:
         )
 
     def _is_concat_operator(self, character: Character) -> bool:
+        """Specifies whether the character passed in is the concatenation operator or not.
+
+        Parameters
+        ----------
+        character : Character
+            The character to be tested.
+
+        Returns
+        -------
+        bool
+            A boolean indicating whether the character passed in is the concatenation operator or not.
+        """
+
         (symbol, escaped) = character
         return symbol == RegexParser._REGEX_CONCAT_OP and not escaped
 
     def _is_alternation_operator(self, character: Character) -> bool:
+        """Specifies whether the character passed in is the alternation operator or not.
+
+        Parameters
+        ----------
+        character : Character
+            The character to be tested.
+
+        Returns
+        -------
+        bool
+            A boolean indicating whether the character passed in is the alternation operator or not.
+        """
+
         (symbol, escaped) = character
         return symbol == RegexParser._REGEX_ALTERNATION_OP and not escaped
 
     def _is_kleene_star_operator(self, character: Character) -> bool:
+        """Specifies whether the character passed in is the Kleene star operator or not.
+
+        Parameters
+        ----------
+        character : Character
+            The character to be tested.
+
+        Returns
+        -------
+        bool
+            A boolean indicating whether the character passed in is the Kleen star operator or not.
+        """
+
         (symbol, escaped) = character
         return symbol == RegexParser._REGEX_KLEENE_STAR_OP and not escaped
 
     def _is_escape_operator(self, character: Character) -> bool:
+        """Specifies whether the character passed in is the escape operator or not.
+
+        Parameters
+        ----------
+        character : Character
+            The character to be tested.
+
+        Returns
+        -------
+        bool
+            A boolean indicating whether the character passed in is the escape operator or not.
+        """
+
         (symbol, escaped) = character
         return symbol == RegexParser._REGEX_ESCAPE_OP and not escaped
 
     def _is_left_parenthesis(self, character: Character) -> bool:
+        """Specifies whether the character passed in is the left parenthesis or not.
+
+        Parameters
+        ----------
+        character : Character
+            The character to be tested.
+
+        Returns
+        -------
+        bool
+            A boolean indicating whether the character passed in is the left parenthesis or not.
+        """
+
         (symbol, escaped) = character
         return symbol == RegexParser._REGEX_LEFT_PAR and not escaped
 
     def _is_right_parenthesis(self, character: Character) -> bool:
+        """Specifies whether the character passed in is the right parenthesis or not.
+
+        Parameters
+        ----------
+        character : Character
+            The character to be tested.
+
+        Returns
+        -------
+        bool
+            A boolean indicating whether the character passed in is the right parenthesis or not.
+        """
+
         (symbol, escaped) = character
         return symbol == RegexParser._REGEX_RIGHT_PAR and not escaped
 
@@ -545,6 +786,9 @@ class RegexParser:
 if __name__ == "__main__":
 
     def test():
+        """
+        Tests the RegexParser class.
+        """
         regex = "ab|c*d|asdf|(a(adf)*)|(\*s*\))"
         parser = RegexParser(regex)
 
