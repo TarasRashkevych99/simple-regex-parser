@@ -119,5 +119,6 @@ The word regex matches the regular expression (r|e|g|e|x)*.
 
 ## Bug Hunting and Future Maintenance
 
-For bugs, logical errors and feature improvements please create a pull request and let me know what
-you have in mind :slightly_smiling_face:.
+For bugs, logical errors and feature improvements please create a new issue or fork this repository,
+make some improvements to the codebase and create a pull request to let me know what you have in mind
+:slightly_smiling_face:.
