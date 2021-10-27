@@ -4,7 +4,6 @@ from expression_tree import ExprTree
 from nfa import NFA
 
 
-# TODO Complete the documentation
 class RegexParser:
     """
     The main class that implements the core functionalities.

@@ -4,7 +4,14 @@ from simple_data_structures import TransFunc
 
 
 class NFA:
+    """
+    The class that implements the NFA(Non-deterministic Finite Automaton).
+    """
+
     def __init__(self) -> None:
+        """
+        Initializes an empty NFA
+        """
         self.states: List[int] = []
         self.alphabet: Set[str] = set()
         self.initial_state: int = -1
@@ -12,6 +19,13 @@ class NFA:
         self.trans_func: TransFunc = {}
 
     def __str__(self) -> str:
+        """Gets the string representation of the NFA.
+
+        Returns
+        -------
+        str
+            The string representation of the NFA.
+        """
         nfa_repr = "Generated NFA:\n"
         nfa_repr += f"\tInitial State: ({self.initial_state})\n"
         nfa_repr += f"\tFinal State: (({self.final_state}))\n"
@@ -23,6 +37,13 @@ class NFA:
         return nfa_repr
 
     def _print_alphabet(self) -> str:
+        """Gets the string representation of the NFA alphabet.
+
+        Returns
+        -------
+        str
+            The string representation of the NFA alphabet.
+        """
         alphabet_repr = "{"
         alphabet = sorted(self.alphabet)
         alphabet_repr += ", ".join("'" + character + "'" for character in alphabet)
@@ -31,6 +52,13 @@ class NFA:
         return alphabet_repr
 
     def _print_trans_func(self) -> str:
+        """Gets the string representation of the NFA transition function.
+
+        Returns
+        -------
+        str
+            The string representation of the NFA transition function.
+        """
         trans_func_repr = ""
         for key in self.trans_func:
             (state, character) = key
@@ -40,4 +68,11 @@ class NFA:
         return trans_func_repr
 
     def _compute_number_of_edges(self) -> int:
+        """Computes the number of edges of the NFA.
+
+        Returns
+        -------
+        int
+            The number of edges of the NFA.
+        """
         return sum((len(self.trans_func[key]) for key in self.trans_func))
