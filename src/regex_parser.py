@@ -786,7 +786,7 @@ if __name__ == "__main__":
 
     def test():
         """
-        Tests the RegexParser class.
+        Tests the the recognize_word() method of the RegexParser class.
         """
 
         regex = "ab|c*d|asdf|(a(adf)*)|(\*s*\))"
