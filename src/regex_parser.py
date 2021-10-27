@@ -789,6 +789,7 @@ if __name__ == "__main__":
         """
         Tests the RegexParser class.
         """
+
         regex = "ab|c*d|asdf|(a(adf)*)|(\*s*\))"
         parser = RegexParser(regex)
 
