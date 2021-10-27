@@ -4,7 +4,7 @@ from expression_tree import ExprTree
 from nfa import NFA
 
 
-# TODO Write the documentation
+# TODO Complete the documentation
 class RegexParser:
     """
     The main class that implements the core functionalities.
@@ -25,8 +25,9 @@ class RegexParser:
         Parameters
         ----------
         raw_regex : str
-            the raw regex that has to be parsed.
+            The raw regex that has to be parsed.
         """
+
         self._raw_regex = raw_regex
         self._escaped_regex = self._escape_regex(self._raw_regex)
         self._preprocessed_regex = self._preprocess_regex(self._escaped_regex)
@@ -36,71 +37,90 @@ class RegexParser:
 
     @property
     def raw_regex(self) -> str:
-        """Returns the raw regex that was passed in when the parser was created.
+        """Gets the raw regex that was passed in when the parser was created.
 
         Returns
         -------
         str
-            the raw regex that was passed in when the parser was created.
+            The raw regex that was passed in when the parser was created.
         """
+
         return self._raw_regex
 
     @property
     def escaped_regex(self) -> str:
-        """Returns the escaped regex obtained by escaping the specified characters in the raw regex.
+        """Gets the escaped regex obtained by escaping the specified characters in the raw regex.
 
         Returns
         -------
         str
-            the escaped regex obtained by escaping the specified characters in the raw regex.
+            The escaped regex obtained by escaping the specified characters in the raw regex.
         """
+
         return "".join((symbol for (symbol, _) in self._escaped_regex))
 
     @property
     def preprocessed_regex(self) -> str:
-        """Returns the preprocessed regex obtained by inserting the concat operator into the escaped regex.
+        """Gets the preprocessed regex obtained by inserting the concat operator into the escaped regex.
 
         Returns
         -------
         str
-            the preprocessed regex obtained by inserting the concat operator into the escaped regex.
+            The preprocessed regex obtained by inserting the concat operator into the escaped regex.
         """
+
         return "".join((symbol for (symbol, _) in self._preprocessed_regex))
 
     @property
     def converted_regex(self) -> str:
-        """Returns the converted regex obtained by converting the preprocessed regex into its postfix notation. 
+        """Gets the converted regex obtained by converting the preprocessed regex into its postfix notation. 
 
         Returns
         -------
         str
-            the converted regex obtained by converting the preprocessed regex into its postfix notation.
+            The converted regex obtained by converting the preprocessed regex into its postfix notation.
         """
+
         return "".join((symbol for (symbol, _) in self._converted_regex))
 
     @property
     def expression_tree(self) -> ExprTree:
-        """Returns the expression tree obtained by creating it from the converted regex.
+        """Gets the expression tree obtained by creating it from the converted regex.
 
         Returns
         -------
         ExprTree
-            the expression tree obtained by creating it from the converted regex.
+            The expression tree obtained by creating it from the converted regex.
         """
+
         return self._expression_tree
 
     @property
     def nfa(self) -> NFA:
-        """Returns the NFA(Non-deterministic Finite Automaton) obtained by building it from the expression tree.
+        """Gets the NFA(Non-deterministic Finite Automaton) obtained by building it from the expression tree.
 
         Returns
         -------
         NFA
-            the NFA(Non-deterministic Finite Automaton) obtained by building it from the expression tree.
+            The NFA(Non-deterministic Finite Automaton) obtained by building it from the expression tree.
         """
+
         return self._nfa
 
     def recognize_word(self, test_word: str) -> bool:
+        """Tests an input word against the regex.
+
+        Parameters
+        ----------
+        test_word : str
+            An input word to be tested against the regex.
+
+        Returns
+        -------
+        bool
+            A boolean indicating whether the input word matches the regex or not.
+        """
+
         if not isinstance(test_word, str):
             return False
 
@@ -118,11 +138,37 @@ class RegexParser:
             return False
 
     def _build_nfa(self, root: ExprTree) -> NFA:
+        """Builds the NFA that will be used to test input words against the regex.
+
+        Parameters
+        ----------
+        root : ExprTree
+            The expression tree used to build the NFA.
+
+        Returns
+        -------
+        NFA
+            The NFA that wil be used to test input words against the regex.
+        """
+
         nfa = self._build_nfa_rec(root)
         RegexParser._next_state_id = 0
         return nfa
 
     def _build_nfa_rec(self, root: ExprTree) -> NFA:
+        """Recursively builds the NFA that will be used to test input words against the regex.
+
+        Parameters
+        ----------
+        root : ExprTree
+            The expression tree used to build the NFA.
+
+        Returns
+        -------
+        NFA
+            The NFA that will be used to test input words against the regex.
+        """
+
         if root is not None:
             left_nfa = self._build_nfa_rec(root.left_child)
             right_nfa = self._build_nfa_rec(root.right_child)
@@ -142,6 +188,19 @@ class RegexParser:
             return NFA()
 
     def _create_expression_tree(self, converted_regex: str) -> ExprTree:
+        """Creates the expression tree that will be used to build the NFA.
+
+        Parameters
+        ----------
+        converted_regex : str
+            The converted regex from which the expression tree is created.
+
+        Returns
+        -------
+        ExprTree
+            The expression tree that will be used to build the NFA.
+        """
+
         stack: List[ExprTree] = []
 
         for character in converted_regex:
@@ -160,6 +219,19 @@ class RegexParser:
         return stack[-1]
 
     def _convert_regex(self, preprocessed_regex: CharacterList) -> CharacterList:
+        """Converts the preprocessed regex into its postfix notation that will be used to create the expression tree.
+
+        Parameters
+        ----------
+        preprocessed_regex : CharacterList
+            The preprocessed regex to be converted into its postfix notation.
+
+        Returns
+        -------
+        CharacterList
+            The converted regex that will be used to create the expression tree.
+        """
+
         stack: CharacterList = []
         converted_regex: CharacterList = []
 
@@ -187,6 +259,19 @@ class RegexParser:
         return converted_regex
 
     def _preprocess_regex(self, escaped_regex: CharacterList) -> CharacterList:
+        """Preprocesses the escaped regex by inserting the concat operator into it to get the preprocessed regex.
+
+        Parameters
+        ----------
+        escaped_regex : CharacterList
+            The escaped regex to be preprocessed.
+
+        Returns
+        -------
+        CharacterList
+            The preprocessed regex that will be used to get the converted regex.
+        """
+
         preprocessed_regex: CharacterList = []
         pred_char = ("", False)
         current_char = ("", False)
@@ -226,6 +311,24 @@ class RegexParser:
         return preprocessed_regex
 
     def _escape_regex(self, raw_regex: str) -> CharacterList:
+        """Escapes some specific characters, if indicated, of the raw regex.
+
+        Parameters
+        ----------
+        raw_regex : str
+            The raw regex whose characters might need to be escaped.
+
+        Returns
+        -------
+        CharacterList
+            The escaped regex that will be used to get the preprocessed regex.
+
+        Raises
+        ------
+        ValueError
+            If the raw regex passed in is empty.
+        """
+
         if not raw_regex:
             raise ValueError("The regex passed in cannot be empty")
 
