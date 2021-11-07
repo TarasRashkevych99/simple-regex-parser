@@ -32,7 +32,7 @@ class RegexParser:
         self._preprocessed_regex = self._preprocess_regex(self._escaped_regex)
         self._converted_regex = self._convert_regex(self._preprocessed_regex)
         self._expression_tree = self._create_expression_tree(self._converted_regex)
-        self._nfa = self._build_nfa_rec(self._expression_tree)
+        self._nfa = self._build_nfa(self._expression_tree)
 
     @property
     def raw_regex(self) -> str:
